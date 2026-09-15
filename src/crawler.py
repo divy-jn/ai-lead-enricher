@@ -297,14 +297,23 @@ def discover_links(
     # Sort by score descending.
     scored.sort(key=lambda d: d.score, reverse=True)
 
-    # Keep at most one URL per category (the highest-scored one).
+    CATEGORY_LIMITS: dict[str, int] = {
+        "leadership": 3,
+        "contact": 2,
+        "about": 2,
+    }
+
     selected: list[DiscoveredLink] = []
-    used_categories: set[str] = set()
+    category_counts: dict[str, int] = {}
 
     for link in scored:
-        if link.category in used_categories:
+        limit = CATEGORY_LIMITS.get(link.category, 1)
+        count = category_counts.get(link.category, 0)
+        
+        if count >= limit:
             continue
-        used_categories.add(link.category)
+            
+        category_counts[link.category] = count + 1
         selected.append(link)
         if len(selected) >= max_pages:
             break

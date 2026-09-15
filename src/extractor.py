@@ -104,6 +104,11 @@ async def enrich_domain(
                     source_urls.append(p.url)
             data.source_urls = source_urls
             
+            # Field-level source urls
+            data.company_source_urls = list({p.url for p in preprocessed_pages if p.category and p.category.lower() in ("about", "company", "homepage", "press")})
+            data.contact_source_urls = list({p.url for p in preprocessed_pages if p.category and p.category.lower() in ("contact", "support")})
+            data.leadership_source_urls = list({p.url for p in preprocessed_pages if p.category and p.category.lower() in ("leadership", "team", "founders", "management", "careers")})
+            
             # External LinkedIn Verification (Bonus)
             for person in data.leadership:
                 if not person.linkedin_url:
@@ -112,27 +117,26 @@ async def enrich_domain(
                         person.linkedin_url = li_url
             
             # Evidence-aware confidence score calculation
-            conf = 0.0
+            # Missing an optional email or leadership page does NOT force a low score.
+            conf = 0.40 if (data.company_overview and data.target_audience) else 0.0
             cats = {p.category.lower() if p.category else "" for p in preprocessed_pages}
             
-            if "about" in cats or "company" in cats or "homepage" in cats:
+            if "about" in cats or "company" in cats:
                 conf += 0.20
+                
             if "contact" in cats:
-                conf += 0.15
-            if "leadership" in cats or "team" in cats or "founders" in cats:
-                conf += 0.20
-            
-            if data.leadership and any(l.name for l in data.leadership):
-                conf += 0.25
+                conf += 0.10
             if data.contact_points:
                 conf += 0.10
                 
-            if any(l.linkedin_url for l in data.leadership):
+            if "leadership" in cats or "team" in cats or "founders" in cats:
+                conf += 0.10
+            if data.leadership and any(l.name for l in data.leadership):
                 conf += 0.10
                 
             # Penalties
             if result.pages_failed > 0:
-                conf -= min(0.15, result.pages_failed * 0.05)
+                conf -= min(0.20, result.pages_failed * 0.05)
                 
             data.confidence_score = round(max(0.0, min(1.0, conf)), 2)
             

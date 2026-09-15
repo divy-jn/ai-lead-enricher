@@ -1,91 +1,65 @@
 {
-  "generated_at": "2026-09-15T16:56:01.413683+00:00",
+  "generated_at": "2026-09-15T17:43:10.748599+00:00",
   "domains": [
     {
       "domain": "postman.com",
       "status": "success",
       "data": {
         "domain": "postman.com",
-        "company_overview": "Postman is an API platform for building and using APIs. Postman simplifies each step of the API lifecycle and streamlines collaboration so you can create better APIs—faster.",
-        "target_audience": "Software engineers and development teams that build, test, manage, and distribute APIs.",
+        "company_overview": "Postman is an API platform that simplifies each step of the API lifecycle and streamlines collaboration for building, testing, managing, and distributing APIs. The company serves developers and enterprises, with over 40 million users and 500,000 companies, including 98 % of the Fortune 500.",
+        "target_audience": "Postman's primary audience includes software developers and enterprise teams that need to design, test, and manage APIs at scale.",
         "primary_generic_contacts": [
           "info@postman.com",
           "info-jp@postman.com",
-          "sales@postman.com",
-          "help@postman.com"
+          "academy@postman.com"
         ],
-        "other_public_contacts": [
-          "legal@postman.com"
-        ],
+        "other_public_contacts": [],
         "contact_points": [
           "info@postman.com",
           "info-jp@postman.com",
-          "sales@postman.com",
-          "help@postman.com",
-          "legal@postman.com"
+          "academy@postman.com"
         ],
         "leadership": [
           {
             "name": "Abhinav Asthana",
-            "role": "CEO and Co‑founder",
+            "role": "CEO / Co‑Founder",
+            "linkedin_url": null
+          },
+          {
+            "name": "Ankit Sobti",
+            "role": "CTO / Co‑Founder",
+            "linkedin_url": null
+          },
+          {
+            "name": "Abhijit Kane",
+            "role": "Product Architect / Co‑Founder",
             "linkedin_url": null
           }
         ],
-        "confidence_score": 0.9,
+        "confidence_score": 1.0,
         "source_urls": [
           "https://www.postman.com/",
           "https://www.postman.com/solutions/partner-api-management/",
+          "https://www.postman.com/solutions/api-lifecycle-management/",
+          "https://academy.postman.com/page/enterprise-implementation-onboarding-guide",
           "https://www.postman.com/company/about-postman/",
+          "https://www.postman.com/company/press-media/",
           "https://support.postman.com/hc/en-us",
           "https://www.postman.com/pricing/",
-          "https://www.postman.com/category/developer-productivity",
-          "https://www.postman.com/legal/terms/"
-        ]
-      },
-      "error": null,
-      "discovery_method": "homepage_links",
-      "pages_discovered": 6,
-      "pages_crawled": 7,
-      "pages_successful": 7,
-      "pages_failed": 0,
-      "prompt_tokens": 11569,
-      "completion_tokens": 1013,
-      "total_tokens": 12582
-    },
-    {
-      "domain": "supabase.com",
-      "status": "success",
-      "data": {
-        "domain": "supabase.com",
-        "company_overview": "Supabase provides a fully managed Postgres development platform that includes authentication, real‑time data, storage, edge functions, and vector embeddings. It is an open‑source, developer‑first solution for building and scaling applications.",
-        "target_audience": "Developers and product teams building web, mobile and AI applications who need a scalable Postgres‑based backend.",
-        "primary_generic_contacts": [],
-        "other_public_contacts": [
-          "security@supabase.com",
-          "legal@supabase.com",
-          "abuse@supabase.com",
-          "help-events@supabase.com",
-          "privacy@supabase.com"
+          "https://www.postman.com/category/developer-productivity"
         ],
-        "contact_points": [
-          "security@supabase.com",
-          "legal@supabase.com",
-          "abuse@supabase.com",
-          "help-events@supabase.com",
-          "privacy@supabase.com"
+        "company_source_urls": [
+          "https://www.postman.com/company/press-media/",
+          "https://www.postman.com/company/about-postman/",
+          "https://www.postman.com/"
         ],
-        "leadership": [],
-        "confidence_score": 0.65,
-        "source_urls": [
-          "https://supabase.com/",
-          "https://supabase.com/solutions/innovation-teams",
-          "https://supabase.com/company",
-          "https://supabase.com/contact-us",
-          "https://supabase.com/pricing",
-          "https://supabase.com/features",
-          "https://supabase.com/careers",
-          "https://supabase.com/customers",
-          "https://supabase.com/partners"
+        "contact_source_urls": [
+          "https://support.postman.com/hc/en-us"
+        ],
+        "leadership_source_urls": [
+          "https://academy.postman.com/page/enterprise-implementation-onboarding-guide",
+          "https://www.postman.com/solutions/api-lifecycle-management/",
+          "https://www.postman.com/solutions/partner-api-management/"
         ]
       },
       "error": null,
@@ -94,17 +68,75 @@
       "pages_crawled": 9,
       "pages_successful": 9,
       "pages_failed": 0,
-      "prompt_tokens": 15081,
-      "completion_tokens": 1059,
-      "total_tokens": 16140
+      "prompt_tokens": 14030,
+      "completion_tokens": 1665,
+      "total_tokens": 15695
+    },
+    {
+      "domain": "supabase.com",
+      "status": "success",
+      "data": {
+        "domain": "supabase.com",
+        "company_overview": "Supabase provides a Postgres‑based development platform that offers authentication, data APIs, edge functions, realtime capabilities, storage, and vector embeddings. It is positioned as an open‑source alternative to Firebase for developers building applications.",
+        "target_audience": "Supabase primarily serves developers and development teams, including startups, enterprises, and innovation groups that need an open‑source backend platform.",
+        "primary_generic_contacts": [],
+        "other_public_contacts": [
+          "privacy@supabase.com",
+          "help-events@supabase.com",
+          "legal@supabase.com",
+          "security@supabase.com",
+          "abuse@supabase.com"
+        ],
+        "contact_points": [
+          "privacy@supabase.com",
+          "help-events@supabase.com",
+          "legal@supabase.com",
+          "security@supabase.com",
+          "abuse@supabase.com"
+        ],
+        "leadership": [],
+        "confidence_score": 0.9,
+        "source_urls": [
+          "https://supabase.com/",
+          "https://supabase.com/solutions/innovation-teams",
+          "https://supabase.com/company",
+          "https://supabase.com/contact-us",
+          "https://supabase.com/support",
+          "https://supabase.com/pricing",
+          "https://supabase.com/features",
+          "https://supabase.com/careers",
+          "https://supabase.com/customers"
+        ],
+        "company_source_urls": [
+          "https://supabase.com/company",
+          "https://supabase.com/"
+        ],
+        "contact_source_urls": [
+          "https://supabase.com/contact-us",
+          "https://supabase.com/support"
+        ],
+        "leadership_source_urls": [
+          "https://supabase.com/careers",
+          "https://supabase.com/solutions/innovation-teams"
+        ]
+      },
+      "error": null,
+      "discovery_method": "homepage_links",
+      "pages_discovered": 8,
+      "pages_crawled": 9,
+      "pages_successful": 9,
+      "pages_failed": 0,
+      "prompt_tokens": 15169,
+      "completion_tokens": 983,
+      "total_tokens": 16152
     },
     {
       "domain": "vapi.ai",
       "status": "success",
       "data": {
         "domain": "vapi.ai",
-        "company_overview": "Vapi provides a platform for building, deploying, and managing advanced voice AI agents. The platform offers enterprise‑grade features such as low‑latency real‑time audio, AI guardrails, and compliance certifications like SOC 2, HIPAA, and PCI.",
-        "target_audience": "Enterprises and development teams that need scalable voice AI agents and conversational voice solutions.",
+        "company_overview": "Vapi provides a platform for building, deploying, and scaling advanced voice AI agents that handle inbound and outbound calls with enterprise‑grade features such as low latency, guardrails, and compliance certifications. Its offering includes a developer‑first API, real‑time monitoring, and customizable integrations for businesses of all sizes.",
+        "target_audience": "The service targets developers and enterprises—ranging from early‑stage builders to Fortune‑100 organizations—across industries like automotive, healthcare, and marketplace platforms that need scalable voice AI solutions.",
         "primary_generic_contacts": [
           "support@vapi.ai",
           "Talent@vapi.ai"
@@ -131,6 +163,15 @@
           "https://vapi.ai/careers",
           "https://vapi.ai/partnerships",
           "https://vapi.ai/privacy"
+        ],
+        "company_source_urls": [
+          "https://vapi.ai/"
+        ],
+        "contact_source_urls": [
+          "https://vapi.ai/sales"
+        ],
+        "leadership_source_urls": [
+          "https://vapi.ai/careers"
         ]
       },
       "error": null,
@@ -139,9 +180,9 @@
       "pages_crawled": 8,
       "pages_successful": 8,
       "pages_failed": 0,
-      "prompt_tokens": 9766,
-      "completion_tokens": 1021,
-      "total_tokens": 10787
+      "prompt_tokens": 9626,
+      "completion_tokens": 1083,
+      "total_tokens": 10709
     }
   ]
 }

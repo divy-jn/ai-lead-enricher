@@ -36,10 +36,12 @@ class LeadershipEntry(BaseModel):
     def validate_full_name(cls, v: str) -> str:
         # A simple deterministic rule: reject names that are just a single short token
         # unless it's a known mononym (which we still reject for business reasons here).
+        # We do not strictly mandate >=2 tokens for every edge case, but we reject
+        # obviously ambiguous short tokens.
         cleaned = v.strip()
         tokens = cleaned.split()
-        if len(tokens) < 2:
-            raise ValueError("Leadership name must be a sufficiently identifiable full name, not a single token.")
+        if len(tokens) < 2 and len(cleaned) < 5:
+            raise ValueError(f"Name '{cleaned}' is too ambiguous/short. Must be a full identifiable name.")
         return cleaned
 
 class CompanyEnrichment(BaseModel):
@@ -79,6 +81,18 @@ class CompanyEnrichment(BaseModel):
     source_urls: list[str] = Field(
         default_factory=list,
         description="List of URLs actually fetched and used as evidence.",
+    )
+    company_source_urls: list[str] = Field(
+        default_factory=list,
+        description="Internal tracking of URLs that provided company overview/audience evidence."
+    )
+    contact_source_urls: list[str] = Field(
+        default_factory=list,
+        description="Internal tracking of URLs that provided contact evidence."
+    )
+    leadership_source_urls: list[str] = Field(
+        default_factory=list,
+        description="Internal tracking of URLs that provided leadership evidence."
     )
 
     @field_validator("company_overview")

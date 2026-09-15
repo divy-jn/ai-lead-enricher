@@ -29,7 +29,7 @@ STRICT RULES:
 2. NEVER INVENT FACTS: Do not hallucinate. Do not invent names, roles, or emails.
 3. CONTACTS: Only use emails explicitly present in the supplied evidence. Never synthesize or infer email addresses.
 4. CONTACT CLASSIFICATION: Place sales/support/general emails (e.g., sales@, info@) in `primary_generic_contacts`. Place compliance/admin emails (e.g., legal@, privacy@, security@, abuse@) in `other_public_contacts`.
-5. LEADERSHIP RULES: You must only create a leadership entry when the evidence contains BOTH a sufficiently identifiable full name and an explicit company-associated role/title. Omit ambiguous candidates. DO NOT accept single-token/partial names (e.g., "Seth", "John") unless the evidence clearly establishes a full identity. Never complete partial names from memory.
+5. LEADERSHIP RULES: You must only create a leadership entry when the evidence contains BOTH a sufficiently identifiable full name and an explicit company-associated role/title. Omit ambiguous candidates. DO NOT complete partial names from memory. DO NOT infer titles. DO NOT invent people. DO NOT guess LinkedIn URLs.
 6. LINKEDIN URLS: Only return a LinkedIn URL when explicitly supported by evidence connecting the person to the URL. Do not guess or infer LinkedIn URLs.
 7. MISSING EVIDENCE: Use empty strings, empty lists, or null where allowed if evidence is lacking.
 8. COMPANY OVERVIEW: Must contain EXACTLY 2 sentences based ONLY on supplied evidence.

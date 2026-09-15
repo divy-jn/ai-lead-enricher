@@ -134,3 +134,41 @@ async def test_llm_timeout_exhaustion(dummy_pages):
             await enrich_with_llm("postman.com", dummy_pages)
             
         assert mock_client_instance.chat.completions.create.call_count == 3  # Based on settings.llm_max_retries = 3
+
+def test_company_overview_sentence_validation():
+    """Test that company_overview must be exactly 2 sentences."""
+    from pydantic import ValidationError
+    
+    valid_data = {
+        "domain": "example.com",
+        "company_overview": "This is sentence one. This is sentence two.",
+        "target_audience": "Devs",
+        "contact_points": [],
+        "leadership": [],
+        "confidence_score": 0.9
+    }
+    # 2 sentences -> valid
+    CompanyEnrichment(**valid_data)
+    
+    # 1 sentence -> rejected
+    with pytest.raises(ValidationError, match="must be exactly 2 sentences"):
+        invalid_1 = valid_data.copy()
+        invalid_1["company_overview"] = "This is just one sentence."
+        CompanyEnrichment(**invalid_1)
+
+    # 3 sentences -> rejected
+    with pytest.raises(ValidationError, match="must be exactly 2 sentences"):
+        invalid_3 = valid_data.copy()
+        invalid_3["company_overview"] = "Sentence one. Sentence two. Sentence three."
+        CompanyEnrichment(**invalid_3)
+
+@pytest.mark.asyncio
+async def test_llm_missing_api_key(dummy_pages):
+    """Test that a missing API key throws a clear configuration error."""
+    with patch('src.llm.settings') as mock_settings:
+        mock_settings.llm_api_key = ""
+        mock_settings.llm_base_url = "https://example.com"
+        mock_settings.llm_timeout_s = 30
+        
+        with pytest.raises(RuntimeError, match="LLM_API_KEY is missing"):
+            await enrich_with_llm("postman.com", dummy_pages)

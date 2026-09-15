@@ -4,7 +4,20 @@ schemas.py — Pydantic models for structured enrichment output.
 These schemas define the exact shape of data the agent produces.
 """
 
-from pydantic import BaseModel, Field
+import re
+from pydantic import BaseModel, Field, field_validator
+
+def _count_sentences(text: str) -> int:
+    # Remove URLs so their periods aren't counted
+    text_no_urls = re.sub(r'https?://[^\s]+', '', text)
+    # Remove common abbreviations (case-insensitive)
+    abbrevs = r'\b(?:Inc|Ltd|Co|Corp|LLC|Mr|Mrs|Ms|Dr|Prof|e\.g|i\.e)\.'
+    text_no_abbrevs = re.sub(abbrevs, '', text_no_urls, flags=re.IGNORECASE)
+    # Remove ellipses
+    text_cleaned = re.sub(r'\.{2,}', '', text_no_abbrevs)
+    # Find sentence-ending punctuation followed by space or end of string
+    matches = re.findall(r'[.!?]+(?:\s+|$)', text_cleaned.strip())
+    return len(matches)
 
 
 class LeadershipEntry(BaseModel):
@@ -44,6 +57,14 @@ class CompanyEnrichment(BaseModel):
         le=1.0,
         description="Confidence in the enrichment data (0.0-1.0). Must reflect evidence completeness.",
     )
+
+    @field_validator("company_overview")
+    @classmethod
+    def validate_two_sentences(cls, v: str) -> str:
+        count = _count_sentences(v)
+        if count != 2:
+            raise ValueError(f"company_overview must be exactly 2 sentences. Found {count}.")
+        return v
 
 
 class LLMResult(BaseModel):

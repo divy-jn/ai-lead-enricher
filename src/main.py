@@ -69,6 +69,12 @@ async def preprocessing_smoke_test(domains: list[str]) -> None:
                     print(f"  {pp.linkedin_urls}")
                 else:
                     print()
+                    
+                print(f"  --- Text Preview ({min(500, len(pp.text))} chars) ---")
+                preview = pp.text[:500].replace("\n", "\\n")
+                preview = preview.encode("ascii", "ignore").decode("ascii")
+                print(f"  {preview}")
+                print(f"  -------------------------------------------")
 
             # Summary.
             all_emails = sorted(set(

@@ -170,32 +170,38 @@ def _extract_text_with_structure(soup: BeautifulSoup) -> str:
     """
     lines: list[str] = []
 
-    for el in soup.descendants:
-        if isinstance(el, NavigableString):
-            parent = el.parent
+    def walk(node) -> None:
+        if isinstance(node, NavigableString):
+            parent = node.parent
             if parent is None or parent.name in TAGS_TO_DECOMPOSE:
-                continue
-            text = str(el).strip()
+                return
+            text = str(node).strip()
             if text:
                 lines.append(text)
-
-        elif isinstance(el, Tag):
-            if el.name in HEADING_TAGS:
-                level = int(el.name[1])
-                heading_text = el.get_text(separator=" ", strip=True)
+        elif isinstance(node, Tag):
+            if node.name in HEADING_TAGS:
+                level = int(node.name[1])
+                heading_text = node.get_text(separator=" ", strip=True)
                 if heading_text:
                     prefix = "#" * min(level, 4)
                     lines.append(f"\n{prefix} {heading_text}\n")
-                    # Prevent descendants from double-emitting.
-                    el.clear()
+                return  # Skip children to prevent double-emitting.
 
-            elif el.name in ("p", "div", "section", "article", "li", "td", "blockquote"):
-                # Insert a newline before block elements for readability.
+            if node.name in ("p", "div", "section", "article", "li", "td", "blockquote"):
                 if lines and not lines[-1].endswith("\n"):
                     lines.append("\n")
-
-            elif el.name == "br":
+                for child in node.children:
+                    walk(child)
+                if lines and not lines[-1].endswith("\n"):
+                    lines.append("\n")
+            elif node.name == "br":
                 lines.append("\n")
+            else:
+                for child in node.children:
+                    walk(child)
+
+    for child in soup.children:
+        walk(child)
 
     return "\n".join(lines)
 

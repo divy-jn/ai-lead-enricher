@@ -72,32 +72,82 @@ async def enrich_domain(
             
         # Step 3: LLM Extraction
         try:
+            from src.search import search_linkedin_person
             llm_result = await enrich_with_llm(domain, preprocessed_pages)
             data = llm_result.data
             
+            # Deterministic email filtering
+            deterministic_emails = {email.lower() for page in preprocessed_pages for email in page.emails}
+            data.primary_generic_contacts = [e for e in data.primary_generic_contacts if e.lower() in deterministic_emails]
+            data.other_public_contacts = [e for e in data.other_public_contacts if e.lower() in deterministic_emails]
+            
+            # Deduplicate case-insensitively and preserve order
+            def dedup(lst):
+                seen = set()
+                res = []
+                for x in lst:
+                    if x.lower() not in seen:
+                        seen.add(x.lower())
+                        res.append(x)
+                return res
+                
+            data.primary_generic_contacts = dedup(data.primary_generic_contacts)
+            data.other_public_contacts = dedup(data.other_public_contacts)
+            data.contact_points = dedup(data.primary_generic_contacts + data.other_public_contacts)
+            
+            # Source urls (deduplicated in crawl order)
+            seen_urls = set()
+            source_urls = []
+            for p in preprocessed_pages:
+                if p.url not in seen_urls:
+                    seen_urls.add(p.url)
+                    source_urls.append(p.url)
+            data.source_urls = source_urls
+            
+            # External LinkedIn Verification (Bonus)
+            for person in data.leadership:
+                if not person.linkedin_url:
+                    li_url = await search_linkedin_person(person.name, domain)
+                    if li_url:
+                        person.linkedin_url = li_url
+            
             # Evidence-aware confidence score calculation
             conf = 0.0
-            if data.company_overview: conf += 0.20
-            if data.target_audience: conf += 0.20
-            if data.contact_points: conf += 0.15
-            if data.leadership: conf += 0.20
-            if any(l.linkedin_url for l in data.leadership): conf += 0.10
+            cats = {p.category.lower() if p.category else "" for p in preprocessed_pages}
             
-            page_coverage = min(1.0, result.pages_successful / 3.0)
-            conf += page_coverage * 0.15
+            if "about" in cats or "company" in cats or "homepage" in cats:
+                conf += 0.20
+            if "contact" in cats:
+                conf += 0.15
+            if "leadership" in cats or "team" in cats or "founders" in cats:
+                conf += 0.20
             
-            data.confidence_score = round(min(1.0, conf), 2)
+            if data.leadership and any(l.name for l in data.leadership):
+                conf += 0.25
+            if data.contact_points:
+                conf += 0.10
+                
+            if any(l.linkedin_url for l in data.leadership):
+                conf += 0.10
+                
+            # Penalties
+            if result.pages_failed > 0:
+                conf -= min(0.15, result.pages_failed * 0.05)
+                
+            data.confidence_score = round(max(0.0, min(1.0, conf)), 2)
             
             result.data = data
             result.prompt_tokens = llm_result.prompt_tokens or 0
             result.completion_tokens = llm_result.completion_tokens or 0
             result.total_tokens = llm_result.total_tokens or 0
             
-            # Determine success vs partial
-            if data.confidence_score >= 0.5 and result.pages_successful >= 2:
+            # Determine success vs partial vs failed
+            if data.company_overview and data.target_audience:
                 result.status = "success"
-            else:
+            elif result.pages_successful > 0:
                 result.status = "partial"
+            else:
+                result.status = "failed"
                 
         except Exception as e:
             logger.error(f"LLM Extraction failed for {domain}: {e}")

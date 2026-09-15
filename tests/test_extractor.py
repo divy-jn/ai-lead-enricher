@@ -55,7 +55,7 @@ async def test_enrich_domains_all_success(mock_crawl_results, dummy_llm_result):
         assert len(results) == 2
         for res in results:
             assert isinstance(res, DomainResult)
-            assert res.status == "partial"  # Confidence score is calculated as 0.20 + 0.20 + 0.0 + 0.0 + 0.0 + (1/3)*0.15 = 0.45, so partial. Wait, dummy_llm_result has overview, audience, so 0.40. Let's make it partial since we test that.
+            assert res.status == "success"
             assert res.data is not None
             assert res.total_tokens == 15
             assert res.pages_crawled == 1
@@ -83,7 +83,7 @@ async def test_enrich_domains_one_failure_isolation(mock_crawl_results, dummy_ll
         assert "Crawler crashed" in results[0].error
         
         assert results[1].domain == "good.com"
-        assert results[1].status == "partial"
+        assert results[1].status == "success"
         assert results[1].data is not None
 
 

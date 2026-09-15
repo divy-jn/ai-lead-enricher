@@ -31,6 +31,17 @@ class LeadershipEntry(BaseModel):
     )
 
 
+    @field_validator("name")
+    @classmethod
+    def validate_full_name(cls, v: str) -> str:
+        # A simple deterministic rule: reject names that are just a single short token
+        # unless it's a known mononym (which we still reject for business reasons here).
+        cleaned = v.strip()
+        tokens = cleaned.split()
+        if len(tokens) < 2:
+            raise ValueError("Leadership name must be a sufficiently identifiable full name, not a single token.")
+        return cleaned
+
 class CompanyEnrichment(BaseModel):
     """Structured enrichment data for a single company domain."""
 
@@ -64,6 +75,10 @@ class CompanyEnrichment(BaseModel):
         ge=0.0,
         le=1.0,
         description="Confidence in the enrichment data (0.0-1.0).",
+    )
+    source_urls: list[str] = Field(
+        default_factory=list,
+        description="List of URLs actually fetched and used as evidence.",
     )
 
     @field_validator("company_overview")

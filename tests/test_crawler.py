@@ -90,11 +90,11 @@ def test_category_priority_sorting():
     links = discover_links(html, "https://test.com", max_pages=5)
     
     assert len(links) == 4
-    # Highest priority should be 'about' (weight 100)
-    assert links[0].category == "about"
-    # Second should be 'team' (weight 90)
-    assert links[1].category == "team"
-    # Third should be 'contact' (weight 80)
+    # Highest priority should be 'leadership' (weight 120) for '/team'
+    assert links[0].category == "leadership"
+    # Second should be 'about' (weight 100)
+    assert links[1].category == "about"
+    # Third should be 'contact' (weight 90)
     assert links[2].category == "contact"
     # Fourth should be 'pricing' (weight 70)
     assert links[3].category == "pricing"

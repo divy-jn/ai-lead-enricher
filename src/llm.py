@@ -25,15 +25,15 @@ def _build_system_prompt() -> str:
     return f"""You are an expert data extraction AI. Your task is to extract structured information about a company based ONLY on the supplied website evidence.
 
 STRICT RULES:
-1. USE ONLY SUPPLIED EVIDENCE: Do not use prior knowledge. If the website evidence does not contain the answer, leave the field empty (or null).
-2. NEVER INVENT FACTS: Do not hallucinate.
-3. NEVER INVENT EMAILS: Only extract emails explicitly found in the evidence.
+1. USE ONLY SUPPLIED EVIDENCE: Do not use prior knowledge. Do not fill missing information from memory.
+2. NEVER INVENT FACTS: Do not hallucinate. Do not invent names, roles, or emails.
+3. CONTACTS: Only use emails explicitly present in the supplied evidence. Never synthesize or infer email addresses.
 4. CONTACT CLASSIFICATION: Place sales/support/general emails (e.g., sales@, info@) in `primary_generic_contacts`. Place compliance/admin emails (e.g., legal@, privacy@, security@, abuse@) in `other_public_contacts`.
-5. LEADERSHIP RULES: You must only create a leadership entry when the evidence contains BOTH the person's name and role/title. Do NOT accept incomplete names (e.g., "Seth") unless explicitly established by evidence.
-6. LINKEDIN URLS: Leadership LinkedIn URLs may only be populated when the supplied evidence explicitly supports the mapping between the person and the URL. Do NOT assign generic company URLs to an individual.
+5. LEADERSHIP RULES: You must only create a leadership entry when the evidence contains BOTH a sufficiently identifiable full name and an explicit company-associated role/title. Omit ambiguous candidates. DO NOT accept single-token/partial names (e.g., "Seth", "John") unless the evidence clearly establishes a full identity. Never complete partial names from memory.
+6. LINKEDIN URLS: Only return a LinkedIn URL when explicitly supported by evidence connecting the person to the URL. Do not guess or infer LinkedIn URLs.
 7. MISSING EVIDENCE: Use empty strings, empty lists, or null where allowed if evidence is lacking.
-8. COMPANY OVERVIEW: Must contain EXACTLY 2 sentences.
-9. CONFIDENCE SCORE: Provide an internal estimate (0.0 to 1.0) of your confidence.
+8. COMPANY OVERVIEW: Must contain EXACTLY 2 sentences based ONLY on supplied evidence.
+9. CONFIDENCE SCORE: Provide an internal estimate (0.0 to 1.0) of your confidence based on the quality of the evidence.
 
 You must output a single valid JSON object that strictly conforms to the following JSON Schema:
 
@@ -59,13 +59,37 @@ def _build_user_prompt(domain: str, pages: list[PreprocessedPage]) -> str:
         prompt += f"DETERMINISTIC LINKEDIN URLS FOUND (Use as evidence if appropriate):\n"
         prompt += ", ".join(all_linkedin) + "\n\n"
         
-    prompt += "WEBSITE EVIDENCE:\n"
-    prompt += "=" * 40 + "\n"
+    # Group pages by evidence category
+    grouped_pages: dict[str, list[PreprocessedPage]] = {
+        "COMPANY": [],
+        "LEADERSHIP": [],
+        "CONTACT": [],
+        "ICP / PRODUCT": [],
+        "OTHER": []
+    }
     
     for page in pages:
-        category = page.category.upper() if page.category else "PAGE"
-        prompt += f"[{category}]\nURL: {page.url}\n\n{page.text}\n"
-        prompt += "-" * 40 + "\n"
+        cat = (page.category or "uncategorised").lower()
+        if cat in ("about", "company", "homepage", "press", "news", "media"):
+            grouped_pages["COMPANY"].append(page)
+        elif cat in ("leadership", "team", "founders", "management", "careers"):
+            grouped_pages["LEADERSHIP"].append(page)
+        elif cat in ("contact", "support"):
+            grouped_pages["CONTACT"].append(page)
+        elif cat in ("product", "pricing", "customers"):
+            grouped_pages["ICP / PRODUCT"].append(page)
+        else:
+            grouped_pages["OTHER"].append(page)
+            
+    for section_name, section_pages in grouped_pages.items():
+        if not section_pages:
+            continue
+            
+        prompt += f"=== {section_name} EVIDENCE ===\n"
+        for page in section_pages:
+            prompt += f"[Source URL: {page.url}]\n{page.text}\n"
+            prompt += "-" * 40 + "\n"
+        prompt += "\n"
         
     return prompt
 

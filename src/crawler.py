@@ -34,25 +34,29 @@ logger = get_logger(__name__)
 # or anchor text.  Order does not matter -- we keep one URL per
 # category in the final selection.
 CATEGORY_KEYWORDS: dict[str, list[str]] = {
-    "about":      ["about", "about-us", "who-we-are", "our-story", "company"],
-    "team":       ["team", "our-team", "leadership", "people", "founders", "executives"],
-    "contact":    ["contact", "contact-us", "get-in-touch", "reach-us", "support"],
+    "about":      ["about", "about-us", "who-we-are", "our-story", "company", "our-company"],
+    "leadership": ["leadership", "management", "founders", "executives", "board", "team", "our-team", "people"],
+    "contact":    ["contact", "contact-us", "get-in-touch", "reach-us", "support", "help"],
+    "press":      ["press", "news", "media", "newsroom"],
     "pricing":    ["pricing", "plans", "price"],
     "careers":    ["careers", "jobs", "work-with-us", "join-us", "hiring"],
     "customers":  ["customers", "case-studies", "testimonials", "success-stories"],
     "product":    ["product", "features", "solutions", "platform", "how-it-works"],
     "partners":   ["partners", "integrations", "marketplace"],
+    "legal":      ["legal", "privacy", "security", "terms", "policy"],
 }
 
 CATEGORY_WEIGHTS: dict[str, float] = {
+    "leadership": 120.0,
     "about":      100.0,
-    "team":       90.0,
-    "contact":    80.0,
+    "contact":    90.0,
+    "press":      80.0,
     "pricing":    70.0,
     "product":    60.0,
     "careers":    50.0,
     "customers":  50.0,
     "partners":   50.0,
+    "legal":      40.0,
 }
 
 # URL-path or anchor-text patterns that should be excluded regardless

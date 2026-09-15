@@ -156,6 +156,8 @@ def _reduce_boilerplate(soup: BeautifulSoup) -> None:
 def _remove_hidden_elements(soup: BeautifulSoup) -> None:
     """Remove elements with display:none or visibility:hidden inline styles."""
     for el in soup.find_all(style=True):
+        if el.attrs is None:
+            continue
         style: str = el.get("style", "")
         if "display:none" in style.replace(" ", "") or \
            "visibility:hidden" in style.replace(" ", ""):

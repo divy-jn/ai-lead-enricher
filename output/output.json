@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-09-15T08:06:38.958184+00:00",
+  "generated_at": "2026-09-15T08:17:09.280794+00:00",
   "domains": [
     {
       "domain": "postman.com",
       "status": "success",
       "data": {
         "domain": "postman.com",
-        "company_overview": "Postman offers an AI-native API platform that lets engineers develop, test, manage, and distribute APIs at enterprise scale. The platform streamlines the entire API lifecycle and supports collaboration across organizations.",
-        "target_audience": "Developers and engineering teams building, testing, and managing APIs, from individual developers to large enterprises.",
+        "company_overview": "Postman provides an AI‑native API platform that enables developers to design, test, manage, and distribute APIs at enterprise scale. The platform streamlines every stage of the API lifecycle and offers tools such as AI Engineer, API governance, and collaborative workspaces.",
+        "target_audience": "Postman's primary audience includes software developers, engineering teams, and enterprises that build, test, and operate APIs.",
         "primary_generic_contacts": [
           "info@postman.com",
           "info-jp@postman.com"
@@ -20,7 +20,7 @@
         "leadership": [
           {
             "name": "Abhinav Asthana",
-            "role": "CEO and co‑founder",
+            "role": "CEO and Co‑Founder",
             "linkedin_url": null
           }
         ],
@@ -33,30 +33,28 @@
       "pages_successful": 5,
       "pages_failed": 0,
       "prompt_tokens": 6968,
-      "completion_tokens": 908,
-      "total_tokens": 7876
+      "completion_tokens": 812,
+      "total_tokens": 7780
     },
     {
       "domain": "supabase.com",
       "status": "success",
       "data": {
         "domain": "supabase.com",
-        "company_overview": "Supabase is an open‑source Postgres development platform that offers a full Postgres database with built‑in authentication, realtime, storage, edge functions, and vector embeddings. It enables developers and enterprises to build, scale, and secure applications quickly.",
-        "target_audience": "Supabase primarily serves developers and product teams—including startups, enterprise innovation teams, and AI builders—who need a scalable, secure backend platform.",
+        "company_overview": "Supabase is an open‑source Postgres development platform that provides a full managed database with built‑in authentication, real‑time sync, storage, edge functions and vector embeddings. It enables developers to build and scale applications quickly, offering a free tier and paid plans for production workloads.",
+        "target_audience": "Developers building applications—from indie projects and startups to enterprise AI and innovation teams—who need a complete Postgres‑based backend.",
         "primary_generic_contacts": [],
         "other_public_contacts": [
-          "privacy@supabase.com",
+          "abuse@supabase.com",
           "legal@supabase.com",
-          "help-events@supabase.com",
-          "security@supabase.com",
-          "abuse@supabase.com"
+          "privacy@supabase.com",
+          "security@supabase.com"
         ],
         "contact_points": [
-          "privacy@supabase.com",
+          "abuse@supabase.com",
           "legal@supabase.com",
-          "help-events@supabase.com",
-          "security@supabase.com",
-          "abuse@supabase.com"
+          "privacy@supabase.com",
+          "security@supabase.com"
         ],
         "leadership": [],
         "confidence_score": 0.7
@@ -67,20 +65,24 @@
       "pages_crawled": 9,
       "pages_successful": 9,
       "pages_failed": 0,
-      "prompt_tokens": 14973,
-      "completion_tokens": 664,
-      "total_tokens": 15637
+      "prompt_tokens": 15250,
+      "completion_tokens": 377,
+      "total_tokens": 15627
     },
     {
       "domain": "vapi.ai",
       "status": "success",
       "data": {
         "domain": "vapi.ai",
-        "company_overview": "Vapi provides a platform for building, deploying, and managing advanced voice AI agents, offering low‑latency, scalable infrastructure and enterprise‑grade features. The solution targets developers and large organizations that need reliable, customizable voice interactions.",
-        "target_audience": "Vapi serves enterprises and developers building voice AI agents across industries such as automotive, healthcare, insurance, and more.",
-        "primary_generic_contacts": [],
+        "company_overview": "Vapi provides a platform for building, deploying, and managing advanced voice AI agents with ultra‑low latency and enterprise‑grade features. The service offers scalable infrastructure, compliance certifications (SOC 2, HIPAA, PCI) and tools for developers and large organizations to create voice‑first experiences.",
+        "target_audience": "Enterprises and developers building voice AI agents across industries such as automotive, healthcare, and finance.",
+        "primary_generic_contacts": [
+          "Talent@vapi.ai"
+        ],
         "other_public_contacts": [],
-        "contact_points": [],
+        "contact_points": [
+          "Talent@vapi.ai"
+        ],
         "leadership": [
           {
             "name": "Jason Mitura",
@@ -88,7 +90,7 @@
             "linkedin_url": null
           }
         ],
-        "confidence_score": 0.75
+        "confidence_score": 0.9
       },
       "error": null,
       "discovery_method": "homepage_links",
@@ -97,8 +99,8 @@
       "pages_successful": 7,
       "pages_failed": 0,
       "prompt_tokens": 6623,
-      "completion_tokens": 765,
-      "total_tokens": 7388
+      "completion_tokens": 846,
+      "total_tokens": 7469
     }
   ]
 }

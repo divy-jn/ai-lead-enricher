@@ -12,13 +12,22 @@ An AI-powered agent that accepts company domains, crawls their public websites u
 
 ## Output Fields
 
-| Field              | Description                                         |
-|--------------------|-----------------------------------------------------|
-| `company_overview` | Exactly 2 concise sentences about the company       |
-| `target_audience`  | Who the company serves                              |
-| `contact_points`   | Generic/public emails found on the site             |
-| `leadership`       | Name, role/title, LinkedIn URL (if discoverable)    |
-| `confidence_score` | 0.0–1.0 confidence in the extracted data            |
+| Field                      | Description                                         |
+|----------------------------|-----------------------------------------------------|
+| `company_overview`         | Exactly 2 concise sentences about the company       |
+| `target_audience`          | Who the company serves                              |
+| `primary_generic_contacts` | General contact emails (e.g., info@, sales@)        |
+| `other_public_contacts`    | Compliance, legal, or specialized public emails     |
+| `contact_points`           | Union of the above two lists                        |
+| `leadership`               | Name, role/title, LinkedIn URL (if discoverable)    |
+| `confidence_score`         | 0.0–1.0 confidence in the extracted data            |
+| `discovery_method`         | Method used to find pages (`homepage_links`, `sitemap`, etc.) |
+| `pages_discovered`         | Number of subpages discovered                       |
+
+## Prerequisites
+
+- Python 3.10+
+- `pip`
 
 ## Setup
 
@@ -40,13 +49,28 @@ playwright install chromium
 
 # 4. Configure environment
 cp .env.example .env
-# Edit .env with your OpenAI API key
+# Edit .env with your specific LLM API key (e.g., from OpenAI/Ollama)
 ```
 
 ## Usage
 
+Run the enrichment pipeline on a set of domains:
 ```bash
 python -m src.main postman.com supabase.com vapi.ai
+```
+
+You can also run it on a single domain:
+```bash
+python -m src.main postman.com
+```
+
+The output will be saved as JSON in `output/output.json`.
+
+## Testing
+
+To run the automated tests:
+```bash
+pytest
 ```
 
 ## Project Structure

@@ -14,8 +14,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 from src.browser import BrowserManager
-from src.crawler import crawl_domain
-from src.preprocessing import preprocess_page, PreprocessedPage
+
 from src.utils import get_logger
 
 logger = get_logger(__name__)

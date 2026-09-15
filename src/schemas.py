@@ -74,3 +74,37 @@ class LLMResult(BaseModel):
     prompt_tokens: int | None = None
     completion_tokens: int | None = None
     total_tokens: int | None = None
+
+
+from typing import Literal
+
+class DomainResult(BaseModel):
+    """The complete processing result for a single domain in the batch pipeline."""
+    
+    domain: str = Field(..., description="The domain processed")
+    status: Literal["success", "partial", "failed"] = Field(
+        ..., description="Overall status of the enrichment process for this domain"
+    )
+    data: CompanyEnrichment | None = Field(
+        None, description="The enriched company data, if successful or partially successful"
+    )
+    error: str | None = Field(None, description="Error message if the domain failed to process")
+    
+    # Operational metadata
+    pages_crawled: int = Field(0, description="Total number of pages discovered and attempted to fetch")
+    pages_successful: int = Field(0, description="Total number of pages successfully fetched and parsed")
+    pages_failed: int = Field(0, description="Total number of pages that failed to fetch")
+    
+    # Token usage
+    prompt_tokens: int = Field(0, description="Tokens used for the prompt")
+    completion_tokens: int = Field(0, description="Tokens used for the completion")
+    total_tokens: int = Field(0, description="Total tokens used for this domain")
+
+
+class BatchResult(BaseModel):
+    """The top-level JSON structure for the batch processing output."""
+    
+    generated_at: str = Field(..., description="ISO 8601 timestamp of when the batch completed")
+    domains: list[DomainResult] = Field(
+        default_factory=list, description="List of results for each processed domain"
+    )

@@ -28,56 +28,63 @@ DEFAULT_DOMAINS = [
 
 
 import json
-from src.extractor import enrich_domain
-
-async def enrichment_smoke_test(domain: str) -> None:
-    """Run the full enrichment pipeline for a single domain and print the results."""
-    print(f"\n{'#'*64}")
-    print(f"#  DOMAIN: {domain}")
-    print(f"{'#'*64}\n")
-
-    # The BrowserManager will be instantiated and closed automatically by enrich_domain
-    # but we could also pass it in. For the smoke test, we'll let enrich_domain handle it.
-    
-    result = await enrich_domain(domain)
-    
-    if not result:
-        print(f"\n[ERROR] Enrichment failed for {domain}. Check logs for details.")
-        return
-
-    print(f"\n{'='*56}")
-    print(f"ENRICHMENT RESULTS FOR: {domain}")
-    print(f"{'='*56}\n")
-    
-    # Print the Pydantic model as formatted JSON
-    print(result.data.model_dump_json(indent=2))
-    
-    print(f"\n{'='*56}")
-    print(f"TOKEN USAGE")
-    print(f"{'='*56}")
-    print(f"Prompt tokens     : {result.prompt_tokens}")
-    print(f"Completion tokens : {result.completion_tokens}")
-    print(f"Total tokens      : {result.total_tokens}")
-    print(f"{'='*56}\n")
-
+from datetime import datetime, timezone
+import os
+from src.extractor import enrich_domains
+from src.schemas import BatchResult
 
 async def main(domains: list[str]) -> None:
-    """Run the enrichment pipeline for the given domains.
-
-    Args:
-        domains: List of company domains to enrich.
-    """
+    """Run the batch enrichment pipeline for the given domains."""
     logger.info("Starting Lead Enrichment Agent")
     
-    # User requested to run ONLY postman.com for this smoke test
-    test_domain = "postman.com"
-    logger.info(f"Running Phase 5 smoke test on {test_domain}")
+    results = await enrich_domains(domains)
+    
+    # Generate JSON output
+    os.makedirs("output", exist_ok=True)
+    batch_result = BatchResult(
+        generated_at=datetime.now(timezone.utc).isoformat(),
+        domains=results
+    )
+    
+    output_path = "output/output.json"
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(batch_result.model_dump_json(indent=2))
+        
+    print("\n")
+    # Print concise progress/results
+    for i, res in enumerate(results, 1):
+        print(f"[{i}/{len(results)}] {res.domain}")
+        print(f"Crawl: {res.pages_successful}/{res.pages_crawled} pages successful")
+        print(f"Preprocess: {res.pages_successful} pages")
+        print(f"LLM: {res.total_tokens} tokens")
+        print(f"Status: {res.status.upper()}")
+        if res.error:
+            print(f"Error: {res.error}")
+        print()
 
-    await enrichment_smoke_test(test_domain)
+    # Print final summary
+    successful = sum(1 for r in results if r.status == "success")
+    partial = sum(1 for r in results if r.status == "partial")
+    failed = sum(1 for r in results if r.status == "failed")
+    total_tokens = sum(r.total_tokens for r in results)
+    
+    print("==================================================")
+    print("BATCH SUMMARY")
+    print("=============")
+    print()
+    print(f"Successful: {successful}/{len(results)}")
+    print(f"Partial:    {partial}/{len(results)}")
+    print(f"Failed:     {failed}/{len(results)}")
+    print(f"Total tokens: {total_tokens}")
+    print(f"Output: {output_path}")
+    print("==========================")
 
     logger.info("Done.")
 
 
 if __name__ == "__main__":
-    # For Phase 5 we ignore sys.argv and just run postman.com as requested
-    asyncio.run(main(DEFAULT_DOMAINS))
+    domains = sys.argv[1:]
+    if not domains:
+        domains = ["postman.com", "supabase.com", "vapi.ai"]
+        
+    asyncio.run(main(domains))

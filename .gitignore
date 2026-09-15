@@ -23,9 +23,11 @@ build/
 Thumbs.db
 
 # Output
-output/
+output/*
+!output/output.json
 results/
 *.json
+!output/output.json
 !package.json
 
 # Logs

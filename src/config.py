@@ -11,8 +11,11 @@ class Settings(BaseSettings):
     """Application configuration loaded from environment / .env file."""
 
     # LLM
-    openai_api_key: str = ""
-    llm_model: str = "gpt-4o-mini"
+    llm_api_key: str = ""
+    llm_base_url: str = "https://ollama.com/v1"
+    llm_model: str = "gpt-oss:120b-cloud"
+    llm_timeout_s: int = 120
+    llm_max_retries: int = 3
 
     # Browser
     browser_headless: bool = True

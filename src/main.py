@@ -10,6 +10,9 @@ Usage:
 import asyncio
 import sys
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 from src.browser import BrowserManager
 from src.crawler import crawl_domain
 from src.preprocessing import preprocess_page, PreprocessedPage
@@ -24,74 +27,38 @@ DEFAULT_DOMAINS = [
 ]
 
 
-async def preprocessing_smoke_test(domains: list[str]) -> None:
-    """Crawl, preprocess, and display results for each domain.
+import json
+from src.extractor import enrich_domain
 
-    This is a temporary smoke test for the preprocessing layer (Phase 4).
-    It will be replaced by the full enrichment pipeline in later phases.
-    """
-    async with BrowserManager() as bm:
-        for domain in domains:
-            print(f"\n{'#'*64}")
-            print(f"#  DOMAIN: {domain}")
-            print(f"{'#'*64}")
+async def enrichment_smoke_test(domain: str) -> None:
+    """Run the full enrichment pipeline for a single domain and print the results."""
+    print(f"\n{'#'*64}")
+    print(f"#  DOMAIN: {domain}")
+    print(f"{'#'*64}\n")
 
-            # Phase 3 -- crawl.
-            crawl_results = await crawl_domain(domain, browser=bm)
+    # The BrowserManager will be instantiated and closed automatically by enrich_domain
+    # but we could also pass it in. For the smoke test, we'll let enrich_domain handle it.
+    
+    result = await enrich_domain(domain)
+    
+    if not result:
+        print(f"\n[ERROR] Enrichment failed for {domain}. Check logs for details.")
+        return
 
-            # Phase 4 -- preprocess each page.
-            preprocessed: list[PreprocessedPage] = []
-            for cr in crawl_results:
-                if not cr.page_result.success:
-                    print(f"\n  [SKIP] {cr.url} -- fetch failed: {cr.page_result.error}")
-                    continue
-
-                pp = preprocess_page(
-                    url=cr.page_result.final_url or cr.url,
-                    category=cr.category,
-                    raw_html=cr.page_result.html,
-                )
-                preprocessed.append(pp)
-
-                print(f"\n  [PREPROCESS]")
-                print(f"  URL             : {pp.url}")
-                print(f"  Category        : {pp.category}")
-                print(f"  Original HTML   : {pp.original_html_chars:,} chars")
-                print(f"  Clean text      : {pp.cleaned_text_chars:,} chars")
-                print(f"  Reduction       : {pp.reduction_percentage}%")
-                print(f"  Emails          : {len(pp.emails)}", end="")
-                if pp.emails:
-                    print(f"  {pp.emails}")
-                else:
-                    print()
-                print(f"  LinkedIn URLs   : {len(pp.linkedin_urls)}", end="")
-                if pp.linkedin_urls:
-                    print(f"  {pp.linkedin_urls}")
-                else:
-                    print()
-                    
-                print(f"  --- Text Preview ({min(500, len(pp.text))} chars) ---")
-                preview = pp.text[:500].replace("\n", "\\n")
-                preview = preview.encode("ascii", "ignore").decode("ascii")
-                print(f"  {preview}")
-                print(f"  -------------------------------------------")
-
-            # Summary.
-            all_emails = sorted(set(
-                e for pp in preprocessed for e in pp.emails
-            ))
-            all_linkedin = sorted(set(
-                u for pp in preprocessed for u in pp.linkedin_urls
-            ))
-            total_clean = sum(pp.cleaned_text_chars for pp in preprocessed)
-
-            print(f"\n  {'='*56}")
-            print(f"  SUMMARY for {domain}")
-            print(f"  Pages preprocessed : {len(preprocessed)}")
-            print(f"  Total clean text   : {total_clean:,} chars")
-            print(f"  Unique emails      : {len(all_emails)}  {all_emails}")
-            print(f"  Unique LinkedIn    : {len(all_linkedin)}  {all_linkedin}")
-            print(f"  {'='*56}")
+    print(f"\n{'='*56}")
+    print(f"ENRICHMENT RESULTS FOR: {domain}")
+    print(f"{'='*56}\n")
+    
+    # Print the Pydantic model as formatted JSON
+    print(result.data.model_dump_json(indent=2))
+    
+    print(f"\n{'='*56}")
+    print(f"TOKEN USAGE")
+    print(f"{'='*56}")
+    print(f"Prompt tokens     : {result.prompt_tokens}")
+    print(f"Completion tokens : {result.completion_tokens}")
+    print(f"Total tokens      : {result.total_tokens}")
+    print(f"{'='*56}\n")
 
 
 async def main(domains: list[str]) -> None:
@@ -101,18 +68,16 @@ async def main(domains: list[str]) -> None:
         domains: List of company domains to enrich.
     """
     logger.info("Starting Lead Enrichment Agent")
-    logger.info("Domains to process: %s", domains)
+    
+    # User requested to run ONLY postman.com for this smoke test
+    test_domain = "postman.com"
+    logger.info(f"Running Phase 5 smoke test on {test_domain}")
 
-    # Phase 4 -- preprocessing smoke test.
-    await preprocessing_smoke_test(domains)
-
-    # TODO: Phase 5+ -- call extractor.enrich_domain() for each domain,
-    #       collect results, and output as JSON.
+    await enrichment_smoke_test(test_domain)
 
     logger.info("Done.")
 
 
 if __name__ == "__main__":
-    # Accept domains from CLI args, or fall back to defaults.
-    domains = sys.argv[1:] if len(sys.argv) > 1 else DEFAULT_DOMAINS
-    asyncio.run(main(domains))
+    # For Phase 5 we ignore sys.argv and just run postman.com as requested
+    asyncio.run(main(DEFAULT_DOMAINS))

@@ -41,7 +41,10 @@ async def enrich_domain(
     try:
         # Step 1: Crawl
         logger.info(f"Starting enrichment pipeline for {domain}")
-        crawl_results = await crawl_domain(domain, browser)
+        crawl_results, discovery_method, pages_discovered = await crawl_domain(domain, browser)
+        
+        result.discovery_method = discovery_method
+        result.pages_discovered = pages_discovered
         
         if crawl_results:
             result.pages_crawled = len(crawl_results)
@@ -70,16 +73,31 @@ async def enrich_domain(
         # Step 3: LLM Extraction
         try:
             llm_result = await enrich_with_llm(domain, preprocessed_pages)
-            result.data = llm_result.data
+            data = llm_result.data
+            
+            # Evidence-aware confidence score calculation
+            conf = 0.0
+            if data.company_overview: conf += 0.20
+            if data.target_audience: conf += 0.20
+            if data.contact_points: conf += 0.15
+            if data.leadership: conf += 0.20
+            if any(l.linkedin_url for l in data.leadership): conf += 0.10
+            
+            page_coverage = min(1.0, result.pages_successful / 3.0)
+            conf += page_coverage * 0.15
+            
+            data.confidence_score = round(min(1.0, conf), 2)
+            
+            result.data = data
             result.prompt_tokens = llm_result.prompt_tokens or 0
             result.completion_tokens = llm_result.completion_tokens or 0
             result.total_tokens = llm_result.total_tokens or 0
             
             # Determine success vs partial
-            if result.pages_failed > 0:
-                result.status = "partial"
-            else:
+            if data.confidence_score >= 0.5 and result.pages_successful >= 2:
                 result.status = "success"
+            else:
+                result.status = "partial"
                 
         except Exception as e:
             logger.error(f"LLM Extraction failed for {domain}: {e}")

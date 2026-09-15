@@ -28,10 +28,12 @@ STRICT RULES:
 1. USE ONLY SUPPLIED EVIDENCE: Do not use prior knowledge. If the website evidence does not contain the answer, leave the field empty (or null).
 2. NEVER INVENT FACTS: Do not hallucinate.
 3. NEVER INVENT EMAILS: Only extract emails explicitly found in the evidence.
-4. NEVER INVENT LINKEDIN URLS: Leadership LinkedIn URLs may only be populated when the supplied evidence explicitly supports the mapping between the person and the URL.
-5. MISSING EVIDENCE: Use empty strings, empty lists, or null where allowed if evidence is lacking.
-6. CONFIDENCE SCORE: Must reflect evidence completeness (0.0 to 1.0).
-7. COMPANY OVERVIEW: Must contain EXACTLY 2 sentences.
+4. CONTACT CLASSIFICATION: Place sales/support/general emails (e.g., sales@, info@) in `primary_generic_contacts`. Place compliance/admin emails (e.g., legal@, privacy@, security@, abuse@) in `other_public_contacts`.
+5. LEADERSHIP RULES: You must only create a leadership entry when the evidence contains BOTH the person's name and role/title. Do NOT accept incomplete names (e.g., "Seth") unless explicitly established by evidence.
+6. LINKEDIN URLS: Leadership LinkedIn URLs may only be populated when the supplied evidence explicitly supports the mapping between the person and the URL. Do NOT assign generic company URLs to an individual.
+7. MISSING EVIDENCE: Use empty strings, empty lists, or null where allowed if evidence is lacking.
+8. COMPANY OVERVIEW: Must contain EXACTLY 2 sentences.
+9. CONFIDENCE SCORE: Provide an internal estimate (0.0 to 1.0) of your confidence.
 
 You must output a single valid JSON object that strictly conforms to the following JSON Schema:
 

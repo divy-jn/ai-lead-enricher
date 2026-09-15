@@ -5,7 +5,7 @@ These schemas define the exact shape of data the agent produces.
 """
 
 import re
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 def _count_sentences(text: str) -> int:
     # Remove URLs so their periods aren't counted
@@ -23,11 +23,11 @@ def _count_sentences(text: str) -> int:
 class LeadershipEntry(BaseModel):
     """A single leadership team member."""
 
-    name: str = Field(..., description="Full name of the person")
+    name: str = Field(..., description="Full name of the person. Reject incomplete names (e.g. first name only) unless evidence clearly establishes it.")
     role: str = Field(..., description="Job title or role")
     linkedin_url: str | None = Field(
         None,
-        description="LinkedIn profile URL, if explicitly found on the site",
+        description="LinkedIn profile URL, if explicitly found on the site and clearly associated with this person.",
     )
 
 
@@ -43,9 +43,17 @@ class CompanyEnrichment(BaseModel):
         ...,
         description="Who the company primarily serves (ICP), based ONLY on supplied evidence.",
     )
+    primary_generic_contacts: list[str] = Field(
+        default_factory=list,
+        description="Primary generic contact emails (e.g., sales@, contact@, info@, support@).",
+    )
+    other_public_contacts: list[str] = Field(
+        default_factory=list,
+        description="Other compliance/administrative emails (e.g., legal@, privacy@, security@, abuse@).",
+    )
     contact_points: list[str] = Field(
         default_factory=list,
-        description="Generic/public email addresses found on the site. Empty list if none found. DO NOT invent emails.",
+        description="Union of primary and other contacts. Will be computed automatically.",
     )
     leadership: list[LeadershipEntry] = Field(
         default_factory=list,
@@ -55,7 +63,7 @@ class CompanyEnrichment(BaseModel):
         ...,
         ge=0.0,
         le=1.0,
-        description="Confidence in the enrichment data (0.0-1.0). Must reflect evidence completeness.",
+        description="Confidence in the enrichment data (0.0-1.0).",
     )
 
     @field_validator("company_overview")
@@ -65,6 +73,13 @@ class CompanyEnrichment(BaseModel):
         if count != 2:
             raise ValueError(f"company_overview must be exactly 2 sentences. Found {count}.")
         return v
+        
+    @model_validator(mode="after")
+    def compute_contact_points(self):
+        combined = set(self.primary_generic_contacts + self.other_public_contacts)
+        # Only overwrite if contact_points is empty, or union them
+        self.contact_points = list(set(self.contact_points) | combined)
+        return self
 
 
 class LLMResult(BaseModel):
@@ -91,7 +106,9 @@ class DomainResult(BaseModel):
     error: str | None = Field(None, description="Error message if the domain failed to process")
     
     # Operational metadata
-    pages_crawled: int = Field(0, description="Total number of pages discovered and attempted to fetch")
+    discovery_method: str = Field("homepage_links", description="Method used to discover pages (e.g., homepage_links, sitemap, robots_sitemap, none)")
+    pages_discovered: int = Field(0, description="Total number of pages discovered")
+    pages_crawled: int = Field(0, description="Total number of pages attempted to fetch")
     pages_successful: int = Field(0, description="Total number of pages successfully fetched and parsed")
     pages_failed: int = Field(0, description="Total number of pages that failed to fetch")
     

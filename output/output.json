@@ -1,88 +1,85 @@
 {
-  "generated_at": "2026-09-15T07:40:12.258702+00:00",
+  "generated_at": "2026-09-15T08:06:38.958184+00:00",
   "domains": [
     {
       "domain": "postman.com",
       "status": "success",
       "data": {
         "domain": "postman.com",
-        "company_overview": "Postman provides an API platform that enables developers to design, test, manage, and distribute APIs at enterprise scale. It streamlines the entire API lifecycle and facilitates collaboration for faster API development.",
-        "target_audience": "Software developers, engineering teams, and enterprises that build, test, and manage APIs.",
+        "company_overview": "Postman offers an AI-native API platform that lets engineers develop, test, manage, and distribute APIs at enterprise scale. The platform streamlines the entire API lifecycle and supports collaboration across organizations.",
+        "target_audience": "Developers and engineering teams building, testing, and managing APIs, from individual developers to large enterprises.",
+        "primary_generic_contacts": [
+          "info@postman.com",
+          "info-jp@postman.com"
+        ],
+        "other_public_contacts": [],
         "contact_points": [
-          "accommodations@postman.com",
           "info-jp@postman.com",
           "info@postman.com"
         ],
         "leadership": [
           {
             "name": "Abhinav Asthana",
-            "role": "CEO and Co‑founder",
-            "linkedin_url": null
-          },
-          {
-            "name": "Ankit Sobti",
-            "role": "Co‑founder",
-            "linkedin_url": null
-          },
-          {
-            "name": "Abhijit Kane",
-            "role": "Co‑founder",
+            "role": "CEO and co‑founder",
             "linkedin_url": null
           }
         ],
-        "confidence_score": 0.95
+        "confidence_score": 0.9
       },
       "error": null,
-      "pages_crawled": 7,
-      "pages_successful": 7,
+      "discovery_method": "homepage_links",
+      "pages_discovered": 4,
+      "pages_crawled": 5,
+      "pages_successful": 5,
       "pages_failed": 0,
-      "prompt_tokens": 8356,
-      "completion_tokens": 802,
-      "total_tokens": 9158
+      "prompt_tokens": 6968,
+      "completion_tokens": 908,
+      "total_tokens": 7876
     },
     {
       "domain": "supabase.com",
       "status": "success",
       "data": {
         "domain": "supabase.com",
-        "company_overview": "Supabase is an open-source Postgres development platform that provides a full managed database, authentication, realtime, storage, edge functions, and vector embeddings. It enables developers to quickly build and scale applications from prototypes to production.",
-        "target_audience": "Developers and engineering teams building applications, ranging from hobby projects and startups to enterprise and AI-driven solutions.",
-        "contact_points": [
+        "company_overview": "Supabase is an open‑source Postgres development platform that offers a full Postgres database with built‑in authentication, realtime, storage, edge functions, and vector embeddings. It enables developers and enterprises to build, scale, and secure applications quickly.",
+        "target_audience": "Supabase primarily serves developers and product teams—including startups, enterprise innovation teams, and AI builders—who need a scalable, secure backend platform.",
+        "primary_generic_contacts": [],
+        "other_public_contacts": [
+          "privacy@supabase.com",
           "legal@supabase.com",
           "help-events@supabase.com",
-          "abuse@supabase.com",
+          "security@supabase.com",
+          "abuse@supabase.com"
+        ],
+        "contact_points": [
           "privacy@supabase.com",
-          "security@supabase.com"
+          "legal@supabase.com",
+          "help-events@supabase.com",
+          "security@supabase.com",
+          "abuse@supabase.com"
         ],
-        "leadership": [
-          {
-            "name": "Seth",
-            "role": "Chief Innovation Officer",
-            "linkedin_url": null
-          },
-          {
-            "name": "Tracy Lane",
-            "role": "General Counsel",
-            "linkedin_url": null
-          }
-        ],
-        "confidence_score": 0.85
+        "leadership": [],
+        "confidence_score": 0.7
       },
       "error": null,
+      "discovery_method": "homepage_links",
+      "pages_discovered": 8,
       "pages_crawled": 9,
       "pages_successful": 9,
       "pages_failed": 0,
-      "prompt_tokens": 14718,
-      "completion_tokens": 758,
-      "total_tokens": 15476
+      "prompt_tokens": 14973,
+      "completion_tokens": 664,
+      "total_tokens": 15637
     },
     {
       "domain": "vapi.ai",
       "status": "success",
       "data": {
         "domain": "vapi.ai",
-        "company_overview": "Vapi provides a unified platform that enables developers and enterprises to build, deploy, and manage advanced voice AI agents quickly and at scale. The solution includes real‑time monitoring, enterprise‑grade security, and built‑in guardrails to ensure reliable, compliant voice interactions.",
-        "target_audience": "Enterprises and developers building voice AI agents and conversational telephony solutions.",
+        "company_overview": "Vapi provides a platform for building, deploying, and managing advanced voice AI agents, offering low‑latency, scalable infrastructure and enterprise‑grade features. The solution targets developers and large organizations that need reliable, customizable voice interactions.",
+        "target_audience": "Vapi serves enterprises and developers building voice AI agents across industries such as automotive, healthcare, insurance, and more.",
+        "primary_generic_contacts": [],
+        "other_public_contacts": [],
         "contact_points": [],
         "leadership": [
           {
@@ -91,15 +88,17 @@
             "linkedin_url": null
           }
         ],
-        "confidence_score": 0.78
+        "confidence_score": 0.75
       },
       "error": null,
-      "pages_crawled": 1,
-      "pages_successful": 1,
+      "discovery_method": "homepage_links",
+      "pages_discovered": 6,
+      "pages_crawled": 7,
+      "pages_successful": 7,
       "pages_failed": 0,
-      "prompt_tokens": 1628,
-      "completion_tokens": 723,
-      "total_tokens": 2351
+      "prompt_tokens": 6623,
+      "completion_tokens": 765,
+      "total_tokens": 7388
     }
   ]
 }

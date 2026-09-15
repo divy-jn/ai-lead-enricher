@@ -44,6 +44,17 @@ CATEGORY_KEYWORDS: dict[str, list[str]] = {
     "partners":   ["partners", "integrations", "marketplace"],
 }
 
+CATEGORY_WEIGHTS: dict[str, float] = {
+    "about":      100.0,
+    "team":       90.0,
+    "contact":    80.0,
+    "pricing":    70.0,
+    "product":    60.0,
+    "careers":    50.0,
+    "customers":  50.0,
+    "partners":   50.0,
+}
+
 # URL-path or anchor-text patterns that should be excluded regardless
 # of any keyword match.
 _SKIP_PATTERNS: list[re.Pattern[str]] = [
@@ -61,13 +72,13 @@ _SKIP_PATTERNS: list[re.Pattern[str]] = [
         r"sso",
         r"account",
         r"dashboard",
-        r"app\.",
-        r"docs\.",
-        r"blog\.",
-        r"help\.",
-        r"status\.",
-        r"cdn\.",
-        r"api\.",
+        r"\bapp\.",
+        r"\bdocs\.",
+        r"\bblog\.",
+        r"\bhelp\.",
+        r"\bstatus\.",
+        r"\bcdn\.",
+        r"\bapi\.",
     ]
 ]
 
@@ -171,13 +182,17 @@ def _score_link(url: str, anchor_text: str) -> tuple[str, float]:
             if kw in text_lower:
                 cat_score += 2.0
 
-        # Prefer shorter, more focused paths.
-        if cat_score > 0 and path.count("/") <= 1:
-            cat_score += 0.5
+        if cat_score > 0:
+            # Prefer shorter, more focused paths.
+            if path.count("/") <= 1:
+                cat_score += 0.5
+                
+            # Apply category priority weight
+            cat_score += CATEGORY_WEIGHTS.get(category, 0.0)
 
-        if cat_score > best_score:
-            best_score = cat_score
-            best_category = category
+            if cat_score > best_score:
+                best_score = cat_score
+                best_category = category
 
     return best_category, best_score
 
@@ -308,18 +323,111 @@ def discover_links(
     return selected
 
 
+async def discover_sitemap_links(
+    domain: str,
+    browser: BrowserManager,
+    max_pages: int
+) -> tuple[list[DiscoveredLink], str]:
+    """Try to discover links via sitemap.xml or robots.txt if homepage lacks evidence."""
+    
+    async def try_sitemap(url: str) -> list[DiscoveredLink]:
+        logger.info("Attempting sitemap discovery at %s", url)
+        res = await browser.fetch(url)
+        if not res.success or not res.html:
+            return []
+        
+        # Use regex to extract <loc> tags robustly without needing an XML parser
+        loc_urls = re.findall(r'<loc>\s*(.*?)\s*</loc>', res.html, flags=re.IGNORECASE)
+        if not loc_urls:
+            return []
+            
+        seen_urls = set()
+        scored = []
+        homepage_url = f"https://{domain}"
+        
+        for loc_url in loc_urls:
+            if not loc_url.startswith("http"):
+                continue
+                
+            if not _is_same_site(loc_url, homepage_url):
+                continue
+                
+            parsed = urlparse(loc_url)
+            clean_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
+            if clean_url.endswith("/") and clean_url != f"{parsed.scheme}://{parsed.netloc}/":
+                clean_url = clean_url.rstrip("/")
+                
+            if clean_url in seen_urls:
+                continue
+                
+            if clean_url.rstrip("/") == homepage_url.rstrip("/"):
+                continue
+                
+            if _has_file_extension(parsed.path):
+                continue
+                
+            if _should_skip(clean_url, ""):
+                continue
+                
+            category, score = _score_link(clean_url, "")
+            if score <= 0:
+                continue
+                
+            seen_urls.add(clean_url)
+            scored.append(DiscoveredLink(
+                url=clean_url,
+                category=category,
+                score=score,
+                anchor_text="[sitemap]"
+            ))
+            
+        scored.sort(key=lambda d: d.score, reverse=True)
+        selected = []
+        used_categories = set()
+        for link in scored:
+            if link.category in used_categories:
+                continue
+            used_categories.add(link.category)
+            selected.append(link)
+            if len(selected) >= max_pages:
+                break
+                
+        return selected
+
+    links = await try_sitemap(f"https://{domain}/sitemap.xml")
+    if links:
+        return links, "sitemap"
+        
+    logger.info("Attempting robots.txt discovery at https://%s/robots.txt", domain)
+    res = await browser.fetch(f"https://{domain}/robots.txt")
+    if res.success and res.html:
+        # Actually robots.txt is plain text, so res.html might be wrapped in html if fetched by playwright,
+        # but we can just use string search or extract text from it.
+        soup = BeautifulSoup(res.html, "html.parser")
+        text = soup.get_text()
+        for line in text.splitlines():
+            if line.strip().lower().startswith("sitemap:"):
+                sitemap_url = line.split(":", 1)[1].strip()
+                links = await try_sitemap(sitemap_url)
+                if links:
+                    return links, "robots_sitemap"
+                    
+    return [], "none"
+
+
 async def crawl_domain(
     domain: str,
     browser: BrowserManager,
     max_pages: int | None = None,
-) -> list[CrawlResult]:
+) -> tuple[list[CrawlResult], str, int]:
     """Discover and fetch relevant pages for *domain*.
 
     Steps:
         1. Fetch the homepage.
         2. Parse homepage HTML to discover relevant links.
-        3. Fetch each discovered link.
-        4. Return all results (homepage + subpages).
+        3. If coverage is weak, fallback to sitemap.
+        4. Fetch each discovered link.
+        5. Return all results (homepage + subpages), discovery method, and pages discovered count.
 
     A failed subpage does *not* stop the rest of the crawl.
 
@@ -329,11 +437,15 @@ async def crawl_domain(
         max_pages: Max subpages to discover (excluding homepage).
 
     Returns:
-        A list of :class:`CrawlResult` for every page fetched
-        (homepage first, then discovered subpages).
+        (results, discovery_method, pages_discovered)
     """
+    if max_pages is None:
+        max_pages = settings.max_crawl_pages
+        
     homepage_url = f"https://{domain}"
     results: list[CrawlResult] = []
+    discovery_method = "homepage_links"
+    pages_discovered = 0
 
     # ---- 1. Fetch homepage ---- #
     logger.info("Crawling domain: %s", domain)
@@ -346,7 +458,7 @@ async def crawl_domain(
         logger.warning(
             "Homepage fetch failed for %s -- skipping discovery", domain
         )
-        return results
+        return results, "none", 0
 
     # ---- 2. Discover links ---- #
     discovered = discover_links(
@@ -354,10 +466,32 @@ async def crawl_domain(
         homepage_url=homepage_result.final_url,  # use post-redirect URL
         max_pages=max_pages,
     )
+    
+    # Assess if useful coverage is weak (e.g., missing core categories or less than 2 links)
+    discovered_categories = {link.category for link in discovered}
+    coverage_weak = (len(discovered) < 2) or ("about" not in discovered_categories and "contact" not in discovered_categories)
+    
+    if coverage_weak:
+        logger.info("Coverage from homepage is weak. Attempting fallback discovery.")
+        fallback_links, fallback_method = await discover_sitemap_links(domain, browser, max_pages)
+        if fallback_links:
+            # deduplicate/merge
+            existing_urls = {link.url for link in discovered}
+            for fl in fallback_links:
+                if fl.url not in existing_urls:
+                    discovered.append(fl)
+            
+            discovery_method = fallback_method
+            
+            # Re-sort and truncate
+            discovered.sort(key=lambda d: d.score, reverse=True)
+            discovered = discovered[:max_pages]
+            
+    pages_discovered = len(discovered)
 
     if not discovered:
         logger.info("No relevant subpages discovered for %s", domain)
-        return results
+        return results, discovery_method, pages_discovered
 
     # ---- 3. Fetch discovered pages ---- #
     for link in discovered:
@@ -387,4 +521,4 @@ async def crawl_domain(
         len(results),
         sum(1 for r in results if r.page_result.success),
     )
-    return results
+    return results, discovery_method, pages_discovered

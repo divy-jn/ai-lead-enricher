@@ -30,7 +30,7 @@ async def test_llm_valid_json(dummy_pages):
     mock_client_instance = AsyncMock()
     mock_response = MagicMock()
     mock_response.choices = [
-        MagicMock(message=MagicMock(content='{"domain": "postman.com", "company_overview": "API Platform. Second sentence.", "target_audience": "Developers", "contact_points": ["info@postman.com"], "leadership": [], "confidence_score": 0.9}'))
+        MagicMock(message=MagicMock(content='{"domain": "postman.com", "company_overview": "API Platform. Second sentence.", "target_audience": "Developers", "primary_generic_contacts": ["info@postman.com"], "other_public_contacts": [], "contact_points": [], "leadership": [], "confidence_score": 0.9}'))
     ]
     mock_response.usage = MagicMock(prompt_tokens=10, completion_tokens=5, total_tokens=15)
     mock_client_instance.chat.completions.create.return_value = mock_response
@@ -60,7 +60,7 @@ async def test_llm_validation_failure_then_retry_success(dummy_pages):
     # Second response is valid
     valid_response = MagicMock()
     valid_response.choices = [
-        MagicMock(message=MagicMock(content='{"domain": "postman.com", "company_overview": "A. B.", "target_audience": "Devs", "contact_points": [], "leadership": [], "confidence_score": 0.9}'))
+        MagicMock(message=MagicMock(content='{"domain": "postman.com", "company_overview": "A. B.", "target_audience": "Devs", "primary_generic_contacts": [], "other_public_contacts": [], "contact_points": [], "leadership": [], "confidence_score": 0.9}'))
     ]
     
     mock_client_instance.chat.completions.create.side_effect = [invalid_response, valid_response]
@@ -84,7 +84,7 @@ async def test_llm_invalid_json_then_success(dummy_pages):
     
     valid_response = MagicMock()
     valid_response.choices = [
-        MagicMock(message=MagicMock(content='{"domain": "postman.com", "company_overview": "A. B.", "target_audience": "Devs", "contact_points": [], "leadership": [], "confidence_score": 0.9}'))
+        MagicMock(message=MagicMock(content='{"domain": "postman.com", "company_overview": "A. B.", "target_audience": "Devs", "primary_generic_contacts": [], "other_public_contacts": [], "contact_points": [], "leadership": [], "confidence_score": 0.9}'))
     ]
     
     mock_client_instance.chat.completions.create.side_effect = [bad_json_response, valid_response]
@@ -104,7 +104,7 @@ async def test_llm_rate_limit_retry(dummy_pages):
     
     valid_response = MagicMock()
     valid_response.choices = [
-        MagicMock(message=MagicMock(content='{"domain": "postman.com", "company_overview": "A. B.", "target_audience": "Devs", "contact_points": [], "leadership": [], "confidence_score": 0.9}'))
+        MagicMock(message=MagicMock(content='{"domain": "postman.com", "company_overview": "A. B.", "target_audience": "Devs", "primary_generic_contacts": [], "other_public_contacts": [], "contact_points": [], "leadership": [], "confidence_score": 0.9}'))
     ]
     
     mock_client_instance.chat.completions.create.side_effect = [rate_limit_error, valid_response]
@@ -143,6 +143,8 @@ def test_company_overview_sentence_validation():
         "domain": "example.com",
         "company_overview": "This is sentence one. This is sentence two.",
         "target_audience": "Devs",
+        "primary_generic_contacts": [],
+        "other_public_contacts": [],
         "contact_points": [],
         "leadership": [],
         "confidence_score": 0.9

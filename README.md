@@ -2,6 +2,27 @@
 
 An autonomous Python agent that turns company domains into structured lead intelligence. It uses Playwright to browse public websites, discovers relevant pages, preprocesses rendered HTML into clean text, extracts deterministic signals such as public emails, and uses an LLM for evidence-based structured enrichment.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    A[Company Domains] --> B[Playwright Browser]
+    B --> C[Relevant Page Discovery]
+    C --> D[HTML Preprocessing]
+    D --> E[Deterministic Signals<br/>Emails / LinkedIn]
+    E --> F[Grouped Evidence]
+    F --> G[LLM Structured Extraction]
+    G --> H[Pydantic Validation]
+    H --> I[Confidence Scoring]
+    I --> J[Structured JSON]
+    J --> K[Demo UI]
+
+    C -. Sitemap fallback .-> B
+    H -. Retry on validation failure .-> G
+```
+
+The agent follows a bounded, evidence-first pipeline. Playwright handles browser rendering and page discovery, preprocessing converts rendered HTML into clean LLM-ready text, deterministic extraction handles public contact signals, and the LLM performs semantic structured extraction. Pydantic validates the final response before it is written to JSON and displayed in the demo UI.
+
 ## What it does
 
 Input one or more company domains:

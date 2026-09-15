@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     # Crawler
     max_crawl_pages: int = 8
 
+    # Preprocessing
+    max_text_chars: int = 15_000
+
     # Logging
     log_level: str = "INFO"
 

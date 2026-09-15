@@ -5,73 +5,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Lead Enricher</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
-        <header>
+        <header class="header">
             <div class="header-content">
                 <h1>AI Lead Enricher</h1>
-                <p>Autonomous company research and lead intelligence</p>
+                <p class="subtitle">Autonomous company research and lead intelligence</p>
             </div>
-            <div class="status-indicator" id="agent-status-indicator">
-                <span class="dot ready"></span> Agent Ready
+            <div class="agent-status">
+                <span class="status-dot"></span>
+                <span>Agent Ready</span>
             </div>
         </header>
 
         <main>
-            <!-- Input Section -->
-            <section class="card input-section">
+            <section class="card input-card">
                 <div class="card-header">
                     <h2>Company Domains</h2>
-                    <div class="controls">
-                        <label class="demo-toggle">
-                            <input type="checkbox" id="demo-mode" checked>
-                            Demo Mode
+                    <div class="toggle-container">
+                        <span class="toggle-label">Demo Mode</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="demo-mode-toggle" checked>
+                            <span class="slider"></span>
                         </label>
-                        <button id="btn-load-examples" class="btn btn-text">Load Examples</button>
+                        <span class="badge" id="demo-badge">ON</span>
                     </div>
                 </div>
-                <div class="domains-input-container">
-                    <textarea id="domains-input" placeholder="Enter domains, one per line (e.g. postman.com)" rows="5"></textarea>
+                
+                <div class="input-area">
+                    <textarea id="domain-input" placeholder="Enter domains (one per line)..."></textarea>
                 </div>
+
                 <div class="actions">
-                    <button id="btn-enrich" class="btn btn-primary">Enrich Companies</button>
+                    <div class="left-actions">
+                        <button id="add-domain-btn" class="btn btn-secondary">+ Add Domain</button>
+                        <button id="load-examples-btn" class="btn btn-secondary">Load Examples</button>
+                    </div>
+                    <button id="enrich-btn" class="btn btn-primary">Enrich Companies</button>
                 </div>
             </section>
 
-            <!-- Progress Section (Initially Hidden) -->
-            <section id="progress-section" class="card hidden">
+            <section id="agent-activity-section" class="card hidden">
                 <h2>Agent Activity</h2>
-                <div id="progress-container" class="progress-container">
-                    <!-- Progress cards will be generated here -->
-                </div>
+                <div id="activity-container" class="activity-container"></div>
             </section>
 
-            <!-- Results Section (Initially Hidden) -->
-            <section id="results-section" class="hidden">
-                <h2>Enrichment Results</h2>
-                <div id="results-container" class="results-container">
-                    <!-- Result cards will be generated here -->
-                </div>
-            </section>
+            <section id="results-section" class="results-container"></section>
         </main>
     </div>
 
-    <!-- Template for Progress Card -->
-    <template id="tpl-progress-card">
-        <div class="progress-card waiting">
-            <div class="progress-header">
-                <span class="domain-name"></span>
-                <span class="status-badge">Waiting</span>
+    <!-- Templates -->
+    <template id="activity-template">
+        <div class="activity-block">
+            <h3 class="activity-domain"></h3>
+            <ul class="activity-steps"></ul>
+        </div>
+    </template>
+
+    <template id="result-template">
+        <div class="card result-card">
+            <div class="result-header">
+                <h2 class="result-domain"></h2>
+                <div class="result-status"></div>
             </div>
-            <ul class="progress-steps">
-                <li data-step="browsing">Browsing website</li>
-                <li data-step="discovering">Discovering relevant pages</li>
-                <li data-step="preprocessing">Cleaning/preprocessing</li>
-                <li data-step="extracting">Extracting company information</li>
-                <li data-step="validating">Validating output</li>
-            </ul>
+            
+            <div class="confidence-container">
+                <div class="confidence-header">
+                    <span>Confidence</span>
+                    <span class="confidence-value"></span>
+                </div>
+                <div class="confidence-bar-bg">
+                    <div class="confidence-bar-fill"></div>
+                </div>
+            </div>
+
+            <div class="result-body">
+                <div class="section company-overview-section">
+                    <h3>Company Overview</h3>
+                    <p class="company-overview"></p>
+                </div>
+                
+                <div class="section target-audience-section">
+                    <h3>Target Audience / ICP</h3>
+                    <p class="target-audience"></p>
+                </div>
+                
+                <div class="section primary-contacts-section">
+                    <h3>Primary Generic Contacts</h3>
+                    <div class="chips primary-contacts"></div>
+                </div>
+                
+                <div class="section other-contacts-section">
+                    <h3>Other Public Contacts</h3>
+                    <div class="chips other-contacts"></div>
+                </div>
+                
+                <div class="section leadership-section">
+                    <h3>Leadership</h3>
+                    <div class="leadership-list"></div>
+                </div>
+
+                <div class="collapsible">
+                    <button class="collapsible-btn">Agent Details ▼</button>
+                    <div class="collapsible-content agent-details"></div>
+                </div>
+
+                <div class="collapsible">
+                    <button class="collapsible-btn">Sources Used ▼</button>
+                    <div class="collapsible-content sources-content"></div>
+                </div>
+            </div>
+            
+            <div class="error-body hidden">
+                <h3>⚠ Enrichment Failed</h3>
+                <p class="error-reason"></p>
+            </div>
         </div>
     </template>
 

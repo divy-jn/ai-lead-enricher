@@ -1,407 +1,272 @@
-const MOCK_DATA = {
-  "postman.com": {
-    "domain": "postman.com",
-    "status": "success",
-    "data": {
-      "domain": "postman.com",
-      "company_overview": "Postman provides an AI‑native API platform that enables developers to design, test, manage, and distribute APIs at enterprise scale. The platform streamlines every stage of the API lifecycle and offers tools such as AI Engineer, API governance, and collaborative workspaces.",
-      "target_audience": "Postman's primary audience includes software developers, engineering teams, and enterprises that build, test, and operate APIs.",
-      "primary_generic_contacts": ["info@postman.com", "info-jp@postman.com"],
-      "other_public_contacts": [],
-      "contact_points": ["info-jp@postman.com", "info@postman.com"],
-      "leadership": [
-        {
-          "name": "Abhinav Asthana",
-          "role": "CEO and Co‑Founder",
-          "linkedin_url": null
-        }
-      ],
-      "confidence_score": 0.9
-    },
-    "error": null,
-    "discovery_method": "homepage_links",
-    "pages_discovered": 4,
-    "pages_crawled": 5,
-    "pages_successful": 5,
-    "pages_failed": 0,
-    "prompt_tokens": 6968,
-    "completion_tokens": 812,
-    "total_tokens": 7780
-  },
-  "supabase.com": {
-    "domain": "supabase.com",
-    "status": "success",
-    "data": {
-      "domain": "supabase.com",
-      "company_overview": "Supabase is an open‑source Postgres development platform that provides a full managed database with built‑in authentication, real‑time sync, storage, edge functions and vector embeddings. It enables developers to build and scale applications quickly, offering a free tier and paid plans for production workloads.",
-      "target_audience": "Developers building applications—from indie projects and startups to enterprise AI and innovation teams—who need a complete Postgres‑based backend.",
-      "primary_generic_contacts": [],
-      "other_public_contacts": ["abuse@supabase.com", "legal@supabase.com", "privacy@supabase.com", "security@supabase.com"],
-      "contact_points": ["abuse@supabase.com", "legal@supabase.com", "privacy@supabase.com", "security@supabase.com"],
-      "leadership": [],
-      "confidence_score": 0.7
-    },
-    "error": null,
-    "discovery_method": "homepage_links",
-    "pages_discovered": 8,
-    "pages_crawled": 9,
-    "pages_successful": 9,
-    "pages_failed": 0,
-    "prompt_tokens": 15250,
-    "completion_tokens": 377,
-    "total_tokens": 15627
-  },
-  "vapi.ai": {
-    "domain": "vapi.ai",
-    "status": "success",
-    "data": {
-      "domain": "vapi.ai",
-      "company_overview": "Vapi provides a platform for building, deploying, and managing advanced voice AI agents with ultra‑low latency and enterprise‑grade features. The service offers scalable infrastructure, compliance certifications (SOC 2, HIPAA, PCI) and tools for developers and large organizations to create voice‑first experiences.",
-      "target_audience": "Enterprises and developers building voice AI agents across industries such as automotive, healthcare, and finance.",
-      "primary_generic_contacts": ["Talent@vapi.ai"],
-      "other_public_contacts": [],
-      "contact_points": ["Talent@vapi.ai"],
-      "leadership": [
-        {
-          "name": "Jason Mitura",
-          "role": "VP of Software Development",
-          "linkedin_url": null
-        }
-      ],
-      "confidence_score": 0.9
-    },
-    "error": null,
-    "discovery_method": "homepage_links",
-    "pages_discovered": 6,
-    "pages_crawled": 7,
-    "pages_successful": 7,
-    "pages_failed": 0,
-    "prompt_tokens": 6623,
-    "completion_tokens": 846,
-    "total_tokens": 7469
-  }
-};
+document.addEventListener('DOMContentLoaded', () => {
+    const domainInput = document.getElementById('domain-input');
+    const loadExamplesBtn = document.getElementById('load-examples-btn');
+    const enrichBtn = document.getElementById('enrich-btn');
+    const demoModeToggle = document.getElementById('demo-mode-toggle');
+    const demoBadge = document.getElementById('demo-badge');
+    const agentActivitySection = document.getElementById('agent-activity-section');
+    const activityContainer = document.getElementById('activity-container');
+    const resultsSection = document.getElementById('results-section');
 
-// DOM Elements
-const btnLoadExamples = document.getElementById('btn-load-examples');
-const btnEnrich = document.getElementById('btn-enrich');
-const inputDomains = document.getElementById('domains-input');
-const demoModeCheckbox = document.getElementById('demo-mode');
-const progressSection = document.getElementById('progress-section');
-const progressContainer = document.getElementById('progress-container');
-const resultsSection = document.getElementById('results-section');
-const resultsContainer = document.getElementById('results-container');
-const tplProgressCard = document.getElementById('tpl-progress-card');
-const agentStatusIndicator = document.getElementById('agent-status-indicator');
-const agentStatusDot = agentStatusIndicator.querySelector('.dot');
+    const activityTemplate = document.getElementById('activity-template');
+    const resultTemplate = document.getElementById('result-template');
 
-// Event Listeners
-btnLoadExamples.addEventListener('click', () => {
-    inputDomains.value = "postman.com\nsupabase.com\nvapi.ai";
-});
+    // UI Interactions
+    demoModeToggle.addEventListener('change', (e) => {
+        demoBadge.textContent = e.target.checked ? 'ON' : 'OFF';
+        demoBadge.style.background = e.target.checked ? 'var(--accent)' : 'var(--text-secondary)';
+    });
 
-btnEnrich.addEventListener('click', async () => {
-    const text = inputDomains.value.trim();
-    if (!text) return;
+    loadExamplesBtn.addEventListener('click', () => {
+        domainInput.value = "postman.com\nsupabase.com\nvapi.ai";
+    });
 
-    const domains = text.split('\n').map(d => d.trim()).filter(d => d);
-    if (domains.length === 0) return;
+    document.getElementById('add-domain-btn').addEventListener('click', () => {
+        domainInput.focus();
+    });
 
-    // Reset UI
-    btnEnrich.disabled = true;
-    inputDomains.disabled = true;
-    resultsSection.classList.add('hidden');
-    resultsContainer.innerHTML = '';
-    progressContainer.innerHTML = '';
-    progressSection.classList.remove('hidden');
-    
-    // Status Indicator Update
-    agentStatusDot.className = 'dot busy';
-    agentStatusIndicator.childNodes[1].nodeValue = ' Agent Running';
-
-    // Start Enrichment
-    const results = await enrichDomains(domains);
-    
-    // Show Results
-    renderResults(results);
-    
-    // Reset State
-    btnEnrich.disabled = false;
-    inputDomains.disabled = false;
-    agentStatusDot.className = 'dot ready';
-    agentStatusIndicator.childNodes[1].nodeValue = ' Agent Ready';
-});
-
-/**
- * Main API function to enrich domains.
- * Currently uses Demo Mode logic if enabled.
- */
-async function enrichDomains(domains) {
-    const isDemo = demoModeCheckbox.checked;
-    
-    if (isDemo) {
-        return await simulateDemoEnrichment(domains);
-    } else {
-        // FUTURE: Real API integration goes here.
-        // const response = await fetch('/enrich', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ domains })
-        // });
-        // return await response.json();
-        
-        alert("Real API integration is not yet connected. Please enable Demo Mode.");
-        return [];
-    }
-}
-
-/**
- * Simulates the enrichment process sequentially for Loom demonstration.
- */
-async function simulateDemoEnrichment(domains) {
-    const results = [];
-
-    // Create a progress card for each domain first (Waiting state)
-    const domainCards = {};
-    for (const domain of domains) {
-        const clone = tplProgressCard.content.cloneNode(true);
-        const card = clone.querySelector('.progress-card');
-        card.querySelector('.domain-name').textContent = domain;
-        progressContainer.appendChild(card);
-        domainCards[domain] = card;
-    }
-
-    // Process each domain one by one to show realistic sequential activity
-    for (const domain of domains) {
-        const card = domainCards[domain];
-        const statusBadge = card.querySelector('.status-badge');
-        const steps = Array.from(card.querySelectorAll('.progress-steps li'));
-
-        // Start processing this domain
-        card.classList.remove('waiting');
-        card.classList.add('running');
-        statusBadge.textContent = 'Running';
-
-        const mockResult = MOCK_DATA[domain] || {
-            domain: domain,
-            status: "failed",
-            error: "Domain not found in mock data. Real API would attempt to process this."
-        };
-
-        const willFail = mockResult.status === "failed";
-
-        // Helper to delay
-        const delay = (ms) => new Promise(r => setTimeout(r, ms));
-
-        // Step 1: Browsing
-        steps[0].classList.add('active');
-        await delay(800 + Math.random() * 500);
-        steps[0].classList.remove('active');
-        steps[0].classList.add('done');
-
-        // Step 2: Discovering
-        steps[1].classList.add('active');
-        await delay(600 + Math.random() * 500);
-        steps[1].classList.remove('active');
-        steps[1].classList.add('done');
-
-        if (willFail) {
-            steps[2].classList.add('error');
-            card.classList.remove('running');
-            card.classList.add('failed');
-            statusBadge.textContent = 'Failed';
-            results.push(mockResult);
-            continue;
-        }
-
-        // Step 3: Preprocessing
-        steps[2].classList.add('active');
-        await delay(700 + Math.random() * 400);
-        steps[2].classList.remove('active');
-        steps[2].classList.add('done');
-
-        // Step 4: Extracting (LLM) - Takes longer
-        steps[3].classList.add('active');
-        await delay(1500 + Math.random() * 1000);
-        steps[3].classList.remove('active');
-        steps[3].classList.add('done');
-
-        // Step 5: Validating
-        steps[4].classList.add('active');
-        await delay(500 + Math.random() * 300);
-        steps[4].classList.remove('active');
-        steps[4].classList.add('done');
-
-        card.classList.remove('running');
-        card.classList.add('success');
-        statusBadge.textContent = 'Success';
-        
-        results.push(mockResult);
-    }
-    
-    // Add a final short pause before showing results
-    await new Promise(r => setTimeout(r, 600));
-    return results;
-}
-
-/**
- * Renders the final results array into HTML cards.
- */
-function renderResults(results) {
-    resultsSection.classList.remove('hidden');
-
-    for (const res of results) {
-        const resultCard = document.createElement('div');
-        resultCard.className = 'result-card';
-        
-        if (res.status === 'failed') {
-            resultCard.innerHTML = `
-                <div class="result-header">
-                    <h3>${res.domain}</h3>
-                    <div class="status-badge" style="background:#fef2f2; color:#ef4444">Failed</div>
-                </div>
-                <div class="result-error">
-                    <strong>⚠ Enrichment failed</strong><br><br>
-                    Reason: ${res.error || "Unknown error"}
-                </div>
-            `;
-            resultsContainer.appendChild(resultCard);
-            continue;
-        }
-
-        const data = res.data;
-        const confidencePercent = Math.round(data.confidence_score * 100);
-        
-        let primaryContactsHtml = '';
-        if (data.primary_generic_contacts && data.primary_generic_contacts.length > 0) {
-            primaryContactsHtml = `
-                <div class="result-section">
-                    <h4>Primary Generic Contacts</h4>
-                    <div class="chips">
-                        ${data.primary_generic_contacts.map(email => `<span class="chip">${email}</span>`).join('')}
-                    </div>
-                </div>
-            `;
-        }
-        
-        let otherContactsHtml = '';
-        if (data.other_public_contacts && data.other_public_contacts.length > 0) {
-            otherContactsHtml = `
-                <div class="result-section">
-                    <h4>Other Public Contacts (Legal/Privacy)</h4>
-                    <div class="chips">
-                        ${data.other_public_contacts.map(email => `<span class="chip">${email}</span>`).join('')}
-                    </div>
-                </div>
-            `;
-        }
-
-        let leadershipHtml = '';
-        if (data.leadership && data.leadership.length > 0) {
-            leadershipHtml = `
-                <div class="result-section">
-                    <h4>Leadership</h4>
-                    <div class="leadership-grid">
-                        ${data.leadership.map(person => `
-                            <div class="person-card">
-                                <div class="person-name">${person.name}</div>
-                                <div class="person-role">${person.role}</div>
-                                ${person.linkedin_url ? `<a href="${person.linkedin_url}" class="person-link" target="_blank">LinkedIn Profile →</a>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        } else {
-            leadershipHtml = `
-                <div class="result-section">
-                    <h4>Leadership</h4>
-                    <p style="color:var(--text-muted); font-size:0.9rem;">Not found</p>
-                </div>
-            `;
-        }
-
-        resultCard.innerHTML = `
-            <div class="result-header">
-                <h3>${res.domain}</h3>
-                <div class="confidence">
-                    Confidence: ${confidencePercent}%
-                    <div class="confidence-bar">
-                        <div class="confidence-fill" style="width: ${confidencePercent}%"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="result-section">
-                <h4>Company Overview</h4>
-                <p>${data.company_overview}</p>
-            </div>
-            
-            <div class="result-section">
-                <h4>Target Audience / ICP</h4>
-                <p>${data.target_audience}</p>
-            </div>
-            
-            ${primaryContactsHtml}
-            ${otherContactsHtml}
-            ${leadershipHtml}
-            
-            <!-- Agent Details Collapsible -->
-            <div class="collapsible">
-                <div class="collapsible-header">
-                    Agent Details
-                    <span class="arrow">▼</span>
-                </div>
-                <div class="collapsible-content">
-                    <div class="metadata-grid">
-                        <div class="metadata-item">
-                            <span class="metadata-label">Discovery Method</span>
-                            <span class="metadata-value">${res.discovery_method || 'N/A'}</span>
-                        </div>
-                        <div class="metadata-item">
-                            <span class="metadata-label">Pages Discovered</span>
-                            <span class="metadata-value">${res.pages_discovered}</span>
-                        </div>
-                        <div class="metadata-item">
-                            <span class="metadata-label">Pages Crawled</span>
-                            <span class="metadata-value">${res.pages_crawled}</span>
-                        </div>
-                        <div class="metadata-item">
-                            <span class="metadata-label">Pages Successful</span>
-                            <span class="metadata-value">${res.pages_successful}</span>
-                        </div>
-                        <div class="metadata-item">
-                            <span class="metadata-label">Pages Failed</span>
-                            <span class="metadata-value">${res.pages_failed}</span>
-                        </div>
-                        <div class="metadata-item">
-                            <span class="metadata-label">Total Tokens</span>
-                            <span class="metadata-value">${res.total_tokens}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Sources Used Collapsible (Placeholder as output.json doesn't contain individual crawled URLs) -->
-            <div class="collapsible">
-                <div class="collapsible-header">
-                    Sources Used
-                    <span class="arrow">▼</span>
-                </div>
-                <div class="collapsible-content">
-                    <p style="color:var(--text-muted); font-style:italic;">Detailed source URLs are tracked internally during the crawl phase.</p>
-                </div>
-            </div>
-        `;
-        
-        // Add listeners for collapsibles
-        const collapsibles = resultCard.querySelectorAll('.collapsible-header');
-        collapsibles.forEach(header => {
-            header.addEventListener('click', () => {
-                header.parentElement.classList.toggle('open');
+    // Helper: Expand/Collapse
+    function setupCollapsible(card) {
+        const btns = card.querySelectorAll('.collapsible-btn');
+        btns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const content = this.nextElementSibling;
+                if (content.classList.contains('active')) {
+                    content.classList.remove('active');
+                    this.textContent = this.textContent.replace('▲', '▼');
+                } else {
+                    content.classList.add('active');
+                    this.textContent = this.textContent.replace('▼', '▲');
+                }
             });
         });
-
-        resultsContainer.appendChild(resultCard);
     }
-}
+
+    // Main Action
+    enrichBtn.addEventListener('click', async () => {
+        const text = domainInput.value.trim();
+        if (!text) return;
+
+        const domains = text.split('\n').map(d => d.trim()).filter(d => d);
+        if (domains.length === 0) return;
+
+        enrichBtn.disabled = true;
+        enrichBtn.textContent = 'Processing...';
+        
+        agentActivitySection.classList.remove('hidden');
+        activityContainer.innerHTML = '';
+        resultsSection.innerHTML = '';
+
+        if (demoModeToggle.checked) {
+            await runDemoMode(domains);
+        } else {
+            await enrichDomains(domains);
+        }
+
+        enrichBtn.disabled = false;
+        enrichBtn.textContent = 'Enrich Companies';
+    });
+
+    // Future Real Backend Integration
+    async function enrichDomains(domains) {
+        alert("Real backend integration not implemented in Demo Mode.");
+    }
+
+    // Demo Mode Simulation
+    async function runDemoMode(domains) {
+        try {
+            // Fetch the real output.json from the repository root
+            const response = await fetch('/output/output.json');
+            if (!response.ok) throw new Error("output.json not found");
+            const outputData = await response.json();
+            
+            for (const domain of domains) {
+                // Find matching data in output.json, or create a failed stub
+                const dataMatch = outputData.domains.find(d => d.domain === domain) || {
+                    domain: domain,
+                    status: "failed",
+                    error: "Domain not found in demo sample data."
+                };
+
+                await simulateAgentActivity(domain);
+                renderResult(dataMatch);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error loading demo data. Make sure python -m http.server is running from the root directory.");
+        }
+    }
+
+    const STEPS = [
+        "Browsing website",
+        "Discovering relevant pages",
+        "Cleaning / preprocessing",
+        "Extracting company information",
+        "Validating output"
+    ];
+
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function simulateAgentActivity(domain) {
+        const clone = activityTemplate.content.cloneNode(true);
+        const block = clone.querySelector('.activity-block');
+        block.querySelector('.activity-domain').textContent = domain;
+        const ul = block.querySelector('.activity-steps');
+        
+        activityContainer.appendChild(block);
+
+        for (const step of STEPS) {
+            const li = document.createElement('li');
+            li.innerHTML = `<span>→</span> ${step}...`;
+            ul.appendChild(li);
+            
+            // Scroll to bottom of activity container
+            activityContainer.scrollTop = activityContainer.scrollHeight;
+            
+            await delay(400); // short delay for demo
+            
+            li.innerHTML = `<span>✓</span> ${step}`;
+            li.classList.add('step-done');
+        }
+
+        const li = document.createElement('li');
+        li.innerHTML = `<span>✓</span> Completed`;
+        li.classList.add('step-done');
+        li.style.fontWeight = '600';
+        ul.appendChild(li);
+        
+        await delay(300);
+    }
+
+    function renderResult(resultData) {
+        const clone = resultTemplate.content.cloneNode(true);
+        const card = clone.querySelector('.result-card');
+        
+        card.querySelector('.result-domain').textContent = resultData.domain;
+        
+        const statusEl = card.querySelector('.result-status');
+        if (resultData.status === 'success') {
+            statusEl.textContent = '✓ SUCCESS';
+            statusEl.className = 'result-status status-success';
+        } else if (resultData.status === 'partial') {
+            statusEl.textContent = '◐ PARTIAL';
+            statusEl.className = 'result-status status-partial';
+        } else {
+            statusEl.textContent = '⚠ FAILED';
+            statusEl.className = 'result-status status-failed';
+        }
+
+        const body = card.querySelector('.result-body');
+        const errorBody = card.querySelector('.error-body');
+
+        if (resultData.status === 'failed') {
+            body.classList.add('hidden');
+            errorBody.classList.remove('hidden');
+            errorBody.querySelector('.error-reason').textContent = resultData.error || "Unknown error";
+        } else {
+            const data = resultData.data || {};
+            
+            // Confidence
+            const confVal = (data.confidence_score !== undefined ? data.confidence_score * 100 : 0);
+            card.querySelector('.confidence-value').textContent = `${confVal}%`;
+            // Trigger animation shortly after insertion
+            setTimeout(() => {
+                card.querySelector('.confidence-bar-fill').style.width = `${confVal}%`;
+                // Color grading
+                if (confVal < 50) card.querySelector('.confidence-bar-fill').style.backgroundColor = 'var(--danger)';
+                else if (confVal < 80) card.querySelector('.confidence-bar-fill').style.backgroundColor = 'var(--warning)';
+            }, 100);
+
+            // Sections
+            if (data.company_overview) {
+                card.querySelector('.company-overview').textContent = data.company_overview;
+            } else {
+                card.querySelector('.company-overview-section').classList.add('hidden');
+            }
+
+            if (data.target_audience) {
+                card.querySelector('.target-audience').textContent = data.target_audience;
+            } else {
+                card.querySelector('.target-audience-section').classList.add('hidden');
+            }
+
+            // Chips
+            const renderChips = (selector, arr) => {
+                const container = card.querySelector(selector);
+                if (!arr || arr.length === 0) {
+                    container.parentElement.classList.add('hidden');
+                    return;
+                }
+                arr.forEach(text => {
+                    const el = document.createElement('span');
+                    el.className = 'chip';
+                    el.textContent = `[${text}]`;
+                    container.appendChild(el);
+                });
+            };
+
+            renderChips('.primary-contacts', data.primary_generic_contacts);
+            renderChips('.other-contacts', data.other_public_contacts);
+
+            // Leadership
+            const leadContainer = card.querySelector('.leadership-list');
+            if (!data.leadership || data.leadership.length === 0) {
+                card.querySelector('.leadership-section').classList.add('hidden');
+            } else {
+                data.leadership.forEach(l => {
+                    const item = document.createElement('div');
+                    item.className = 'leadership-item';
+                    let html = `<div class="leadership-name">${l.name}</div>`;
+                    if (l.role) html += `<div class="leadership-role">${l.role}</div>`;
+                    if (l.linkedin_url) {
+                        html += `<a href="${l.linkedin_url}" target="_blank" class="linkedin-link">LinkedIn ↗</a>`;
+                    }
+                    item.innerHTML = html;
+                    leadContainer.appendChild(item);
+                });
+            }
+
+            // Agent Details
+            const detailsHtml = `
+                <div class="metrics-grid">
+                    <div class="metric"><span class="metric-label">Discovery Method</span><span class="metric-value">${resultData.discovery_method || 'N/A'}</span></div>
+                    <div class="metric"><span class="metric-label">Pages Discovered</span><span class="metric-value">${resultData.pages_discovered || 0}</span></div>
+                    <div class="metric"><span class="metric-label">Pages Crawled</span><span class="metric-value">${resultData.pages_crawled || 0}</span></div>
+                    <div class="metric"><span class="metric-label">Pages Successful</span><span class="metric-value">${resultData.pages_successful || 0}</span></div>
+                    <div class="metric"><span class="metric-label">Pages Failed</span><span class="metric-value">${resultData.pages_failed || 0}</span></div>
+                    <div class="metric"><span class="metric-label">Prompt Tokens</span><span class="metric-value">${resultData.prompt_tokens || 0}</span></div>
+                    <div class="metric"><span class="metric-label">Completion Tokens</span><span class="metric-value">${resultData.completion_tokens || 0}</span></div>
+                    <div class="metric"><span class="metric-label">Total Tokens</span><span class="metric-value">${resultData.total_tokens || 0}</span></div>
+                </div>
+            `;
+            card.querySelector('.agent-details').innerHTML = detailsHtml;
+
+            // Sources
+            let sourcesHtml = '';
+            
+            const renderSourcesList = (title, urls) => {
+                if (!urls || urls.length === 0) return '';
+                let s = `<div class="source-title">${title}</div><ul class="source-list">`;
+                urls.forEach(u => {
+                    s += `<li>✓ <a href="${u}" target="_blank">${u}</a></li>`;
+                });
+                s += `</ul>`;
+                return s;
+            };
+
+            sourcesHtml += renderSourcesList('All Sources', data.source_urls);
+            sourcesHtml += renderSourcesList('Company Sources', data.company_source_urls);
+            sourcesHtml += renderSourcesList('Contact Sources', data.contact_source_urls);
+            sourcesHtml += renderSourcesList('Leadership Sources', data.leadership_source_urls);
+
+            if (!sourcesHtml) sourcesHtml = 'No sources available.';
+            card.querySelector('.sources-content').innerHTML = sourcesHtml;
+        }
+
+        setupCollapsible(card);
+        resultsSection.appendChild(card);
+    }
+});

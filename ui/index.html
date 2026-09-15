@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Lead Enricher</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-content">
+                <h1>AI Lead Enricher</h1>
+                <p>Autonomous company research and lead intelligence</p>
+            </div>
+            <div class="status-indicator" id="agent-status-indicator">
+                <span class="dot ready"></span> Agent Ready
+            </div>
+        </header>
+
+        <main>
+            <!-- Input Section -->
+            <section class="card input-section">
+                <div class="card-header">
+                    <h2>Company Domains</h2>
+                    <div class="controls">
+                        <label class="demo-toggle">
+                            <input type="checkbox" id="demo-mode" checked>
+                            Demo Mode
+                        </label>
+                        <button id="btn-load-examples" class="btn btn-text">Load Examples</button>
+                    </div>
+                </div>
+                <div class="domains-input-container">
+                    <textarea id="domains-input" placeholder="Enter domains, one per line (e.g. postman.com)" rows="5"></textarea>
+                </div>
+                <div class="actions">
+                    <button id="btn-enrich" class="btn btn-primary">Enrich Companies</button>
+                </div>
+            </section>
+
+            <!-- Progress Section (Initially Hidden) -->
+            <section id="progress-section" class="card hidden">
+                <h2>Agent Activity</h2>
+                <div id="progress-container" class="progress-container">
+                    <!-- Progress cards will be generated here -->
+                </div>
+            </section>
+
+            <!-- Results Section (Initially Hidden) -->
+            <section id="results-section" class="hidden">
+                <h2>Enrichment Results</h2>
+                <div id="results-container" class="results-container">
+                    <!-- Result cards will be generated here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Template for Progress Card -->
+    <template id="tpl-progress-card">
+        <div class="progress-card waiting">
+            <div class="progress-header">
+                <span class="domain-name"></span>
+                <span class="status-badge">Waiting</span>
+            </div>
+            <ul class="progress-steps">
+                <li data-step="browsing">Browsing website</li>
+                <li data-step="discovering">Discovering relevant pages</li>
+                <li data-step="preprocessing">Cleaning/preprocessing</li>
+                <li data-step="extracting">Extracting company information</li>
+                <li data-step="validating">Validating output</li>
+            </ul>
+        </div>
+    </template>
+
+    <script src="script.js"></script>
+</body>
+</html>
